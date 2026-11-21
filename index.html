@@ -1,9 +1,10 @@
+```html
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Codeplug Forge — Multi-Band & Multi-Mode Radio Programmer</title>
+  <title>Codeplug Forge — Multi-Band &amp; Multi-Mode Radio Programmer</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -39,7 +40,6 @@
     .badge-nxdn { background: rgba(244,63,94,.15); color: #fb7185; border: 1px solid rgba(244,63,94,.3); }
     .badge-trunk { background: rgba(249,115,22,.15); color: #fb923c; border: 1px solid rgba(249,115,22,.3); }
 
-    /* Agency / Role Badges */
     .role-police { background: rgba(59,130,246,.18); color: #93c5fd; border: 1px solid rgba(59,130,246,.35); }
     .role-fire { background: rgba(239,68,68,.18); color: #fca5a5; border: 1px solid rgba(239,68,68,.35); }
     .role-ems { background: rgba(245,158,11,.18); color: #fcd34d; border: 1px solid rgba(245,158,11,.35); }
@@ -94,7 +94,7 @@
         1. Map &amp; Repeater Explorer
       </button>
       <button onclick="switchTab('statutory')" data-tab="statutory" class="tab-btn px-4 py-2.5 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">
-        2. FRS / GMRS / MURS / Marine
+        2. FRS / GMRS / MURS / Marine / Interop
       </button>
       <button onclick="switchTab('contacts')" data-tab="contacts" class="tab-btn px-4 py-2.5 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">
         3. Contacts &amp; Talkgroups (BM &amp; P25)
@@ -113,12 +113,67 @@
 
     <!-- ==================== TAB 1: MAP & EXPLORER ==================== -->
     <section id="tab-explorer" class="tab-panel grid grid-cols-1 lg:grid-cols-12 gap-4">
-      <!-- Left Filters & Tools -->
+      <!-- Left Filters & Live Data Sources -->
       <aside class="lg:col-span-3 space-y-4">
         <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-4">
           <div class="flex items-center justify-between">
-            <h2 class="text-sm font-bold text-white">Search Filters</h2>
+            <h2 class="text-sm font-bold text-white">Live Data &amp; Filters</h2>
             <button onclick="resetFilters()" class="text-xs text-cyan-400 hover:underline">Reset</button>
+          </div>
+
+          <!-- Live Repeater API Controls -->
+          <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-3 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-cyan-300">Live Repeater Lookup</span>
+              <span id="liveApiStatus" class="text-[10px] font-mono text-slate-400">Ready</span>
+            </div>
+            <button onclick="fetchLiveHearHam()" id="btnFetchLive" class="w-full py-1.5 px-2.5 rounded bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold transition">
+              Fetch Live Local Repeaters (HearHam)
+            </button>
+            <div class="pt-1 space-y-1.5">
+              <input id="openRepeaterKey" type="password" placeholder="Optional OpenRepeater API Key (or_...)"
+                class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-[11px] text-white" />
+              <button onclick="fetchOpenRepeater()" class="w-full py-1 px-2 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-[11px]">
+                Query OpenRepeater.org API
+              </button>
+            </div>
+
+            <!-- Cloudflare Relay (Idle Until Tokens Added) -->
+            <div class="pt-2 mt-2 border-t border-slate-800 space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-semibold text-amber-300">RB &amp; RR Live Relay</span>
+                <span id="relayStatusPill" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">Idle</span>
+              </div>
+              <div class="flex gap-1">
+                <input id="relayUrl" type="url" placeholder="https://your-worker.workers.dev"
+                  onchange="onRelayUrlChange(this.value)"
+                  class="flex-1 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-[11px] text-white" />
+                <button onclick="checkRelayStatus()" title="Check Relay Status" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[10px] text-slate-300">
+                  Check
+                </button>
+              </div>
+              <p id="relayHelperMsg" class="text-[10px] text-slate-400 leading-snug">
+                Paste your Cloudflare Worker URL (stays idle until your RepeaterBook token is added).
+              </p>
+              <button onclick="fetchRepeaterBookRelay()" id="btnFetchRB" class="w-full py-1.5 px-2 rounded bg-emerald-600/80 hover:bg-emerald-500 text-white text-[11px] font-semibold">
+                Fetch RepeaterBook (Live)
+              </button>
+              <div class="grid grid-cols-2 gap-1 pt-1">
+                <input id="rrUser" type="text" placeholder="RR Username" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-[11px] text-white" />
+                <input id="rrPass" type="password" placeholder="RR Password" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-[11px] text-white" />
+              </div>
+              <div class="flex gap-1">
+                <input id="rrZip" type="text" placeholder="5-digit ZIP" class="w-24 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-[11px] text-white font-mono" />
+                <button onclick="fetchRadioReferenceRelay()" class="flex-1 py-1 px-2 rounded bg-orange-600/80 hover:bg-orange-500 text-white text-[11px] font-semibold">
+                  Pull RadioReference
+                </button>
+              </div>
+            </div>
+
+            <label class="flex items-center gap-2 text-[11px] text-amber-300 pt-1 cursor-pointer">
+              <input id="hideTemplates" type="checkbox" onchange="applyFilters()" class="accent-amber-500">
+              Hide Demo Templates (Live/CSV Only)
+            </label>
           </div>
 
           <!-- Distance Slider -->
@@ -171,16 +226,16 @@
               <label class="flex items-center gap-2"><input type="checkbox" class="filter-service accent-cyan-500" value="Amateur" checked onchange="applyFilters()"> Amateur Radio (Ham)</label>
               <label class="flex items-center gap-2"><input type="checkbox" class="filter-service accent-cyan-500" value="Public Safety Conv" checked onchange="applyFilters()"> Public Safety (Conventional)</label>
               <label class="flex items-center gap-2"><input type="checkbox" class="filter-service accent-orange-500" value="Trunked" checked onchange="applyFilters()"> Public Safety / Utility Trunked</label>
-              <label class="flex items-center gap-2"><input type="checkbox" class="filter-service accent-cyan-500" value="GMRS" checked onchange="applyFilters()"> GMRS Local Repeaters</label>
+              <label class="flex items-center gap-2"><input type="checkbox" class="filter-service accent-cyan-500" value="GMRS" checked onchange="applyFilters()"> GMRS Repeaters</label>
               <label class="flex items-center gap-2"><input type="checkbox" class="filter-service accent-cyan-500" value="Marine" checked onchange="applyFilters()"> Marine / Coastal VHF</label>
             </div>
           </div>
 
           <!-- External CSV Import -->
           <div class="pt-3 border-t border-slate-800 space-y-2">
-            <div class="text-xs font-semibold text-slate-300">Import Live Repeater / RR CSV</div>
-            <p class="text-[11px] text-slate-400">Load exports from <strong>RepeaterBook</strong> or <strong>RadioReference</strong> (auto-maps County, Agency, Tag/Type, Description &amp; Encryption).</p>
-            <input id="repeaterCsvUpload" type="file" accept=".csv" onchange="importRepeaterCSV(event)"
+            <div class="text-xs font-semibold text-slate-300">Import RadioReference / RepeaterBook CSV</div>
+            <p class="text-[11px] text-slate-400">Import official local Police/Fire/EMS/Trunked CSVs from RadioReference or RepeaterBook exports.</p>
+            <input id="repeaterCsvUpload" type="file" accept=".csv,.json" onchange="importRepeaterCSV(event)"
               class="block w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:bg-slate-800 file:text-cyan-400 hover:file:bg-slate-700 cursor-pointer" />
           </div>
         </div>
@@ -213,12 +268,12 @@
             <div>
               <div class="flex items-center gap-2 flex-wrap">
                 <h3 class="text-sm font-bold text-white">Available Repeaters &amp; Trunked Systems</h3>
-                <span class="text-[11px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                  Demo grid localized to search area — import RR/RepeaterBook CSV for exact local licenses
+                <span id="dataSourceBadge" class="text-[11px] px-2 py-0.5 rounded bg-slate-800 text-cyan-300 border border-slate-700">
+                  Live Ham API + Public Safety Templates
                 </span>
               </div>
               <p class="text-[11px] text-slate-400 mt-0.5">
-                Public Safety channels default to <span class="text-rose-300 font-semibold">RX-Only (Receive Only)</span>. Expand trunked systems to inspect individual Police, Fire &amp; EMS talkgroups.
+                Rows marked <span class="text-amber-300 font-semibold">[TEMPLATE]</span> are structural examples for Public Safety/GMRS—connect the Relay or import RadioReference CSV for exact local dispatch &amp; talkgroups.
               </p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
@@ -231,7 +286,7 @@
                 <option value="Public Safety">All Public Safety</option>
                 <option value="Amateur">Amateur / GMRS / Marine</option>
               </select>
-              <input id="tableSearch" type="text" placeholder="Search name, city, type, desc, freq..."
+              <input id="tableSearch" type="text" placeholder="Search callsign, city, type, freq..."
                 oninput="applyFilters()"
                 class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1 text-xs text-white focus:outline-none focus:border-cyan-500 w-56" />
             </div>
@@ -241,8 +296,8 @@
             <table class="w-full text-left text-xs">
               <thead class="bg-slate-950 text-slate-400 uppercase font-mono text-[11px] sticky top-0 z-10">
                 <tr>
-                  <th class="px-3 py-2.5">System / Channel Name &amp; Location</th>
-                  <th class="px-3 py-2.5">Type / Role</th>
+                  <th class="px-3 py-2.5">Callsign / System &amp; Location</th>
+                  <th class="px-3 py-2.5">Type / Role &amp; Source</th>
                   <th class="px-3 py-2.5">Description (Channel / System / TGs)</th>
                   <th class="px-3 py-2.5">Band &amp; Mode</th>
                   <th class="px-3 py-2.5">RX / TX &amp; Tone/NAC</th>
@@ -257,18 +312,20 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 2: STATUTORY SERVICES ==================== -->
+    <!-- ==================== TAB 2: STATUTORY, MARINE, INTEROP & SIMPLEX ==================== -->
     <section id="tab-statutory" class="tab-panel hidden space-y-4">
       <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 class="text-base font-bold text-white">License-Free &amp; Statutory US Frequency Tables</h2>
-          <p class="text-xs text-slate-400">Exact FCC Part 95 (FRS, GMRS, MURS) and Part 80 (Marine VHF + NOAA Weather) channel allocations. One click adds an organized Zone to your codeplug.</p>
+          <h2 class="text-base font-bold text-white">Complete FCC Statutory, Marine, NIFOG Interop &amp; Simplex Tables</h2>
+          <p class="text-xs text-slate-400">Complete US Part 95 (FRS 1–22, GMRS all 30 channels incl. 8–14 &amp; repeaters, MURS 1–5), Part 80 Marine VHF (01A–88A, AIS &amp; WX1–7), NIFOG Public Safety Interop (RX-Only safe), and Amateur Calling/Simplex.</p>
         </div>
         <div class="flex flex-wrap gap-2">
-          <button onclick="addServiceZone('FRS')" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">+ Add FRS (22 Ch)</button>
-          <button onclick="addServiceZone('GMRS')" class="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold">+ Add GMRS (Simplex + Rptrs)</button>
-          <button onclick="addServiceZone('MURS')" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold">+ Add MURS (5 Ch)</button>
-          <button onclick="addServiceZone('Marine')" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold">+ Add Marine &amp; WX</button>
+          <button onclick="addServiceZone('FRS')" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">+ Add FRS (22)</button>
+          <button onclick="addServiceZone('GMRS')" class="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold">+ Add GMRS (All 30)</button>
+          <button onclick="addServiceZone('MURS')" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold">+ Add MURS (5)</button>
+          <button onclick="addServiceZone('Marine')" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold">+ Add Full Marine &amp; WX</button>
+          <button onclick="addServiceZone('NIFOG')" class="px-3 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-xs font-semibold">+ Add NIFOG Interop</button>
+          <button onclick="addServiceZone('HamSimplex')" class="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold">+ Add Ham Calling/Simplex</button>
         </div>
       </div>
 
@@ -326,7 +383,6 @@
               oninput="renderTalkgroups()"
               class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500" />
           </div>
-          <!-- Custom Contact Adder -->
           <div class="grid grid-cols-12 gap-2 pt-2 border-t border-slate-800/70">
             <select id="customTgMode" class="col-span-3 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs">
               <option value="DMR">DMR TG</option>
@@ -412,7 +468,6 @@
           </div>
         </div>
 
-        <!-- Import Local RadioID user.csv or Query API -->
         <div class="pt-3 border-t border-slate-800 space-y-2.5">
           <div class="text-xs font-semibold text-slate-300">Data Source (RadioID.net)</div>
           <label class="block text-[11px] text-slate-400">Upload local RadioID <code class="text-cyan-400">user.csv</code> (processed 100% locally in browser):</label>
@@ -481,7 +536,7 @@
           </div>
           <label class="flex items-center gap-2 text-xs text-slate-300 pt-1">
             <input id="rxOnlyPublicSafety" type="checkbox" checked class="accent-cyan-500">
-            Enforce TX Prohibit (RX-Only) on Public Safety, Trunked &amp; NOAA WX channels
+            Enforce TX Prohibit (RX-Only) on Public Safety, Trunked, NIFOG Interop &amp; NOAA WX
           </label>
           <label class="flex items-center gap-2 text-xs text-slate-300">
             <input id="autoExpandDmrTgs" type="checkbox" checked class="accent-cyan-500">
@@ -494,10 +549,10 @@
           <p class="text-xs text-slate-400">Downloads formatted CSV/JSON files ready for your CPS software.</p>
 
           <button onclick="exportCodeplug('anytone')" class="w-full py-2 px-3 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold text-left flex justify-between items-center">
-            <span>AnyTone CPS Bundle (Channels, TGs, Zones)</span><span class="font-mono">.CSV</span>
+            <span>AnyTone CPS Bundle (Channels, TGs)</span><span class="font-mono">.CSV</span>
           </button>
           <button onclick="exportCodeplug('opengd77')" class="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold text-left flex justify-between items-center">
-            <span>OpenGD77 CPS Bundle (Channels, Contacts, Zones)</span><span class="font-mono">.CSV</span>
+            <span>OpenGD77 CPS Bundle (Channels, Contacts)</span><span class="font-mono">.CSV</span>
           </button>
           <button onclick="exportCodeplug('chirp')" class="w-full py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold text-left flex justify-between items-center">
             <span>CHIRP Analog / VHF-UHF / GMRS / FRS / Marine</span><span class="font-mono">.CSV</span>
@@ -544,6 +599,15 @@
 
   </main>
 
+  <!-- ATTRIBUTION FOOTER -->
+  <footer class="border-t border-slate-800 bg-slate-950/90 py-3 px-4 text-center text-xs text-slate-400">
+    Codeplug Forge (Non-Commercial Amateur Radio Tool) •
+    Repeater data provided by <a href="https://www.repeaterbook.com" target="_blank" rel="noopener" class="text-emerald-400 hover:underline font-medium">RepeaterBook.com</a>,
+    <a href="https://hearham.com" target="_blank" rel="noopener" class="text-cyan-400 hover:underline font-medium">HearHam.com</a>,
+    <a href="https://www.radioreference.com" target="_blank" rel="noopener" class="text-orange-400 hover:underline font-medium">RadioReference.com</a>,
+    and <a href="https://radioid.net" target="_blank" rel="noopener" class="text-amber-400 hover:underline font-medium">RadioID.net</a>.
+  </footer>
+
   <script>
     // =========================================================================
     // STATE & CORE DATA
@@ -555,6 +619,9 @@
       countyName: "Dallas County",
       stateAbbr: "TX",
       radiusMiles: 35,
+      hearHamCache: null,
+      liveSites: [],
+      templateSites: [],
       repeaters: [],
       filteredRepeaters: [],
       expandedTrunkIds: new Set(),
@@ -599,7 +666,9 @@
       filteredDmrDatabase: []
     };
 
-    // Statutory FCC Exact Channel Tables
+    // =========================================================================
+    // COMPLETE STATUTORY, MARINE, NIFOG INTEROP & AMATEUR SIMPLEX TABLES
+    // =========================================================================
     const STATUTORY_TABLES = {
       FRS: Array.from({ length: 22 }, (_, i) => {
         const freqs = [
@@ -609,36 +678,84 @@
         ];
         const ch = i + 1;
         const power = (ch >= 8 && ch <= 14) ? "0.5W" : "2.0W";
-        return { name: `FRS ${String(ch).padStart(2, '0')}`, zone: "FRS", band: "UHF", mode: "Analog", service: "FRS", agencyType: "FRS Simplex", desc: `FRS Channel ${ch} (${power} max)`, rx: freqs[i], tx: freqs[i], bw: "12.5", tone: "None", power, rxOnly: false };
+        return { name: `FRS ${String(ch).padStart(2, '0')}`, zone: "FRS", band: "UHF", mode: "Analog", service: "FRS", agencyType: "FRS Simplex", desc: `FRS Channel ${ch} (${power} ERP max)`, rx: freqs[i], tx: freqs[i], bw: "12.5", tone: "None", power, rxOnly: false };
       }),
+
       GMRS: [
         ...[462.5625, 462.5875, 462.6125, 462.6375, 462.6625, 462.6875, 462.7125].map((f, i) => ({
-          name: `GMRS ${String(i + 1).padStart(2, '0')}`, zone: "GMRS", band: "UHF", mode: "Analog", service: "GMRS", agencyType: "GMRS Simplex", desc: `GMRS Interstitial Ch ${i + 1} (5W max)`, rx: f, tx: f, bw: "12.5", tone: "None", power: "5W", rxOnly: false
+          name: `GMRS ${String(i + 1).padStart(2, '0')}`, zone: "GMRS", band: "UHF", mode: "Analog", service: "GMRS", agencyType: "GMRS Simplex", desc: `GMRS Ch ${i + 1} Interstitial (5W max)`, rx: f, tx: f, bw: "20", tone: "None", power: "5W", rxOnly: false
+        })),
+        ...[467.5625, 467.5875, 467.6125, 467.6375, 467.6625, 467.6875, 467.7125].map((f, i) => ({
+          name: `GMRS ${String(i + 8).padStart(2, '0')}`, zone: "GMRS", band: "UHF", mode: "Analog", service: "GMRS", agencyType: "GMRS Low-Power", desc: `GMRS Ch ${i + 8} Handheld Interstitial (0.5W max, 12.5kHz)`, rx: f, tx: f, bw: "12.5", tone: "None", power: "0.5W", rxOnly: false
         })),
         ...[462.5500, 462.5750, 462.6000, 462.6250, 462.6500, 462.6750, 462.7000, 462.7250].map((f, i) => ({
-          name: `GMRS ${i + 15}`, zone: "GMRS", band: "UHF", mode: "Analog", service: "GMRS", agencyType: "GMRS Simplex", desc: `GMRS Primary High-Power Ch ${i + 15} (50W max)`, rx: f, tx: f, bw: "25", tone: "None", power: "50W", rxOnly: false
+          name: `GMRS ${i + 15}`, zone: "GMRS", band: "UHF", mode: "Analog", service: "GMRS", agencyType: "GMRS Simplex", desc: `GMRS Ch ${i + 15} Primary High-Power (50W max)`, rx: f, tx: f, bw: "25", tone: "None", power: "50W", rxOnly: false
         })),
         ...[462.5500, 462.5750, 462.6000, 462.6250, 462.6500, 462.6750, 462.7000, 462.7250].map((f, i) => ({
-          name: `GMRS R${i + 15}`, zone: "GMRS", band: "UHF", mode: "Analog", service: "GMRS", agencyType: "GMRS Repeater", desc: `GMRS Repeater Pair ${i + 15}R (+5 MHz input)`, rx: f, tx: Number((f + 5).toFixed(4)), bw: "25", tone: "141.3", power: "50W", rxOnly: false
+          name: `GMRS R${i + 15}`, zone: "GMRS", band: "UHF", mode: "Analog", service: "GMRS", agencyType: "GMRS Repeater", desc: `GMRS Repeater ${i + 15}R (+5.0 MHz input)`, rx: f, tx: Number((f + 5).toFixed(4)), bw: "25", tone: "141.3", power: "50W", rxOnly: false
         }))
       ],
+
       MURS: [
-        { name: "MURS 1", zone: "MURS", band: "VHF", mode: "Analog", service: "MURS", agencyType: "MURS Simplex", desc: "MURS Ch 1 (VHF 11.25 kHz Narrow)", rx: 151.8200, tx: 151.8200, bw: "11.25", tone: "None", power: "2W", rxOnly: false },
-        { name: "MURS 2", zone: "MURS", band: "VHF", mode: "Analog", service: "MURS", agencyType: "MURS Simplex", desc: "MURS Ch 2 (VHF 11.25 kHz Narrow)", rx: 151.8800, tx: 151.8800, bw: "11.25", tone: "None", power: "2W", rxOnly: false },
-        { name: "MURS 3", zone: "MURS", band: "VHF", mode: "Analog", service: "MURS", agencyType: "MURS Simplex", desc: "MURS Ch 3 (VHF 11.25 kHz Narrow)", rx: 151.9400, tx: 151.9400, bw: "11.25", tone: "None", power: "2W", rxOnly: false },
+        { name: "MURS 1", zone: "MURS", band: "VHF", mode: "Analog", service: "MURS", agencyType: "MURS Simplex", desc: "MURS Ch 1 (11.25 kHz Narrow)", rx: 151.8200, tx: 151.8200, bw: "11.25", tone: "None", power: "2W", rxOnly: false },
+        { name: "MURS 2", zone: "MURS", band: "VHF", mode: "Analog", service: "MURS", agencyType: "MURS Simplex", desc: "MURS Ch 2 (11.25 kHz Narrow)", rx: 151.8800, tx: 151.8800, bw: "11.25", tone: "None", power: "2W", rxOnly: false },
+        { name: "MURS 3", zone: "MURS", band: "VHF", mode: "Analog", service: "MURS", agencyType: "MURS Simplex", desc: "MURS Ch 3 (11.25 kHz Narrow)", rx: 151.9400, tx: 151.9400, bw: "11.25", tone: "None", power: "2W", rxOnly: false },
         { name: "MURS 4 Blue", zone: "MURS", band: "VHF", mode: "Analog", service: "MURS", agencyType: "MURS Simplex", desc: "MURS Ch 4 Blue Dot (20 kHz)", rx: 154.5700, tx: 154.5700, bw: "20", tone: "None", power: "2W", rxOnly: false },
         { name: "MURS 5 Green", zone: "MURS", band: "VHF", mode: "Analog", service: "MURS", agencyType: "MURS Simplex", desc: "MURS Ch 5 Green Dot (20 kHz)", rx: 154.6000, tx: 154.6000, bw: "20", tone: "None", power: "2W", rxOnly: false }
       ],
+
       Marine: [
-        { name: "MAR 06 Safety", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Safety", desc: "Intership Safety & Search/Rescue", rx: 156.3000, tx: 156.3000, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 09 Calling", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Calling", desc: "Recreational Boater Calling Channel", rx: 156.4500, tx: 156.4500, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 13 Nav", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Nav", desc: "Bridge-to-Bridge Navigation (1W limit)", rx: 156.6500, tx: 156.6500, bw: "25", tone: "None", power: "1W", rxOnly: false },
-        { name: "MAR 16 Distress", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Distress", desc: "International Distress, Safety & Calling", rx: 156.8000, tx: 156.8000, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 22A USCG", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "US Coast Guard", desc: "USCG Liaison & Maritime Advisories", rx: 157.1000, tx: 157.1000, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 68 NonCom", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Working", desc: "Non-Commercial Working Channel", rx: 156.4250, tx: 156.4250, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 69 NonCom", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Working", desc: "Non-Commercial Working Channel", rx: 156.4750, tx: 156.4750, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 71 NonCom", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Working", desc: "Non-Commercial Working Channel", rx: 156.5750, tx: 156.5750, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 72 Ship", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Intership", desc: "Non-Commercial Intership Only", rx: 156.6250, tx: 156.6250, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 01A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port/VTS", desc: "Port Ops & Commercial VTS (Lower MS)", rx: 156.0500, tx: 156.0500, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 05A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port/VTS", desc: "Port Ops & VTS (Houston/Seattle/NOLA)", rx: 156.2500, tx: 156.2500, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 06", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Safety", desc: "Intership Safety & SAR", rx: 156.3000, tx: 156.3000, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 07A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Commercial", desc: "Commercial Working", rx: 156.3500, tx: 156.3500, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 08", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Commercial", desc: "Commercial Intership Only", rx: 156.4000, tx: 156.4000, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 09", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Calling", desc: "Boater Calling Channel", rx: 156.4500, tx: 156.4500, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 10", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Commercial", desc: "Commercial Working", rx: 156.5000, tx: 156.5000, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 11", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Commercial", desc: "Commercial / VTS Selected Areas", rx: 156.5500, tx: 156.5500, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 12", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port/VTS", desc: "Port Operations / VTS", rx: 156.6000, tx: 156.6000, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 13", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Nav", desc: "Bridge-to-Bridge Navigation (1W limit)", rx: 156.6500, tx: 156.6500, bw: "25", tone: "None", power: "1W", rxOnly: false },
+        { name: "MAR 14", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port/VTS", desc: "Port Operations / VTS", rx: 156.7000, tx: 156.7000, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 15 RX", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Environmental", desc: "Environmental / EPIRB Beacon (RX Only)", rx: 156.7500, tx: 156.7500, bw: "25", tone: "None", power: "RX", rxOnly: true },
+        { name: "MAR 16", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Distress", desc: "International Distress, Safety & Calling", rx: 156.8000, tx: 156.8000, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 17", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "State Control", desc: "State & Local Govt Maritime Control (1W)", rx: 156.8500, tx: 156.8500, bw: "25", tone: "None", power: "1W", rxOnly: false },
+        { name: "MAR 18A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Commercial", desc: "Commercial Working", rx: 156.9000, tx: 156.9000, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 19A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Commercial", desc: "Commercial Working", rx: 156.9500, tx: 156.9500, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 20", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port Ops", desc: "Port Operations (Duplex 157.000/161.600)", rx: 161.6000, tx: 157.0000, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 20A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port Ops", desc: "Port Operations Simplex", rx: 157.0000, tx: 157.0000, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 21A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "US Coast Guard", desc: "USCG Only (RX-Safe Default)", rx: 157.0500, tx: 157.0500, bw: "25", tone: "None", power: "RX", rxOnly: true },
+        { name: "MAR 22A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "US Coast Guard", desc: "USCG Liaison & Safety Broadcasts", rx: 157.1000, tx: 157.1000, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 23A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "US Coast Guard", desc: "USCG Only (RX-Safe Default)", rx: 157.1500, tx: 157.1500, bw: "25", tone: "None", power: "RX", rxOnly: true },
+        { name: "MAR 24", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Operator", desc: "Public Correspondence Duplex", rx: 161.8000, tx: 157.2000, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 25", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Operator", desc: "Public Correspondence Duplex", rx: 161.8500, tx: 157.2500, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 26", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Operator", desc: "Public Correspondence Duplex", rx: 161.9000, tx: 157.3000, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 27", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Operator", desc: "Public Correspondence Duplex", rx: 161.9500, tx: 157.3500, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 28", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Operator", desc: "Public Correspondence Duplex", rx: 162.0000, tx: 157.4000, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 63A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port/VTS", desc: "Port Ops / VTS (Lower MS)", rx: 156.1750, tx: 156.1750, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 65A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port Ops", desc: "Port Operations", rx: 156.2750, tx: 156.2750, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 66A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port Ops", desc: "Port Operations", rx: 156.3250, tx: 156.3250, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 67", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Commercial", desc: "Commercial Bridge-to-Bridge Intership", rx: 156.3750, tx: 156.3750, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 68", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Non-Commercial", desc: "Recreational Working Channel", rx: 156.4250, tx: 156.4250, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 69", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Non-Commercial", desc: "Recreational Working Channel", rx: 156.4750, tx: 156.4750, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 70 DSC", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "DSC Data", desc: "Digital Selective Calling (No Voice — RX Only)", rx: 156.5250, tx: 156.5250, bw: "25", tone: "None", power: "RX", rxOnly: true },
+        { name: "MAR 71", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Non-Commercial", desc: "Recreational Working Channel", rx: 156.5750, tx: 156.5750, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 72", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Non-Commercial", desc: "Recreational Intership Only", rx: 156.6250, tx: 156.6250, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 73", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port Ops", desc: "Port Operations", rx: 156.6750, tx: 156.6750, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 74", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port Ops", desc: "Port Operations", rx: 156.7250, tx: 156.7250, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 77", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port Ops", desc: "Port Operations Intership Pilot", rx: 156.8750, tx: 156.8750, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 78A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Non-Commercial", desc: "Recreational Working Channel", rx: 156.9250, tx: 156.9250, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 79A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Commercial", desc: "Commercial (Non-Comm in Great Lakes)", rx: 156.9750, tx: 156.9750, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 80A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Commercial", desc: "Commercial (Non-Comm in Great Lakes)", rx: 157.0250, tx: 157.0250, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 81A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "US Govt", desc: "US Govt Environmental Ops (RX-Safe)", rx: 157.0750, tx: 157.0750, bw: "25", tone: "None", power: "RX", rxOnly: true },
+        { name: "MAR 82A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "US Govt", desc: "US Govt Only (RX-Safe)", rx: 157.1250, tx: 157.1250, bw: "25", tone: "None", power: "RX", rxOnly: true },
+        { name: "MAR 83A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "US Coast Guard", desc: "USCG Only (RX-Safe)", rx: 157.1750, tx: 157.1750, bw: "25", tone: "None", power: "RX", rxOnly: true },
+        { name: "MAR 84", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Operator", desc: "Public Correspondence Duplex", rx: 161.8250, tx: 157.2250, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 85", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Operator", desc: "Public Correspondence Duplex", rx: 161.8750, tx: 157.2750, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 86", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Operator", desc: "Public Correspondence Duplex", rx: 161.9250, tx: 157.3250, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 87A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Operator", desc: "Public Correspondence", rx: 157.3750, tx: 157.3750, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 88A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Commercial", desc: "Commercial Intership Only", rx: 157.4250, tx: 157.4250, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "AIS 1", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "AIS Data", desc: "Marine AIS Vessel Tracking Ch A (RX Only)", rx: 161.9750, tx: 161.9750, bw: "25", tone: "None", power: "RX", rxOnly: true },
+        { name: "AIS 2", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "AIS Data", desc: "Marine AIS Vessel Tracking Ch B (RX Only)", rx: 162.0250, tx: 162.0250, bw: "25", tone: "None", power: "RX", rxOnly: true },
         { name: "WX1 NOAA", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "NOAA Weather", desc: "NOAA Weather Radio Ch 1 (RX Only)", rx: 162.5500, tx: 162.5500, bw: "25", tone: "None", power: "RX", rxOnly: true },
         { name: "WX2 NOAA", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "NOAA Weather", desc: "NOAA Weather Radio Ch 2 (RX Only)", rx: 162.4000, tx: 162.4000, bw: "25", tone: "None", power: "RX", rxOnly: true },
         { name: "WX3 NOAA", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "NOAA Weather", desc: "NOAA Weather Radio Ch 3 (RX Only)", rx: 162.4750, tx: 162.4750, bw: "25", tone: "None", power: "RX", rxOnly: true },
@@ -646,6 +763,46 @@
         { name: "WX5 NOAA", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "NOAA Weather", desc: "NOAA Weather Radio Ch 5 (RX Only)", rx: 162.4500, tx: 162.4500, bw: "25", tone: "None", power: "RX", rxOnly: true },
         { name: "WX6 NOAA", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "NOAA Weather", desc: "NOAA Weather Radio Ch 6 (RX Only)", rx: 162.5000, tx: 162.5000, bw: "25", tone: "None", power: "RX", rxOnly: true },
         { name: "WX7 NOAA", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "NOAA Weather", desc: "NOAA Weather Radio Ch 7 (RX Only)", rx: 162.5250, tx: 162.5250, bw: "25", tone: "None", power: "RX", rxOnly: true }
+      ],
+
+      NIFOG: [
+        { name: "VCALL10", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "VHF National Calling Channel (RX-Safe Default)", rx: 155.7525, tx: 155.7525, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
+        { name: "VTAC11", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "VHF Tactical Interop 1", rx: 151.1375, tx: 151.1375, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
+        { name: "VTAC12", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "VHF Tactical Interop 2", rx: 154.4525, tx: 154.4525, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
+        { name: "VTAC13", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "VHF Tactical Interop 3", rx: 158.7375, tx: 158.7375, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
+        { name: "VTAC14", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "VHF Tactical Interop 4", rx: 159.4725, tx: 159.4725, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
+        { name: "VFIRE21", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Local Fire", desc: "VHF Fire Interop Primary (154.280)", rx: 154.2800, tx: 154.2800, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
+        { name: "VFIRE22", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Local Fire", desc: "VHF Fire Interop Secondary", rx: 154.2650, tx: 154.2650, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
+        { name: "VFIRE23", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Local Fire", desc: "VHF Fire Interop Tertiary", rx: 154.2950, tx: 154.2950, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
+        { name: "VMED28", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Local EMS", desc: "VHF Medical / Ambulance-to-Hospital HEAR", rx: 155.3400, tx: 155.3400, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
+        { name: "VLAW31", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Local Police", desc: "VHF National Law Enforcement Interop (NLEEC)", rx: 155.4750, tx: 155.4750, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
+        { name: "NATSAR", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "National Search & Rescue (VSAR16)", rx: 155.1600, tx: 155.1600, bw: "12.5", tone: "127.3", power: "RX", rxOnly: true },
+        { name: "UCALL40", zone: "NIFOG Interop", band: "UHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "UHF National Calling Repeater (+5 MHz)", rx: 453.2125, tx: 458.2125, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
+        { name: "UTAC41", zone: "NIFOG Interop", band: "UHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "UHF Tactical Interop 1 Repeater", rx: 453.4625, tx: 458.4625, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
+        { name: "UTAC42", zone: "NIFOG Interop", band: "UHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "UHF Tactical Interop 2 Repeater", rx: 453.7125, tx: 458.7125, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
+        { name: "UTAC43", zone: "NIFOG Interop", band: "UHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "UHF Tactical Interop 3 Repeater", rx: 453.8625, tx: 458.8625, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
+        { name: "7CALL50D", zone: "NIFOG Interop", band: "700/800", mode: "P25", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "700 MHz National Calling Direct (NAC $293)", rx: 769.24375, tx: 769.24375, bw: "12.5", tone: "NAC 293", power: "RX", rxOnly: true },
+        { name: "7TAC51D", zone: "NIFOG Interop", band: "700/800", mode: "P25", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "700 MHz General Tactical Direct (NAC $293)", rx: 769.14375, tx: 769.14375, bw: "12.5", tone: "NAC 293", power: "RX", rxOnly: true },
+        { name: "7TAC52D", zone: "NIFOG Interop", band: "700/800", mode: "P25", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "700 MHz General Tactical 2 Direct", rx: 769.64375, tx: 769.64375, bw: "12.5", tone: "NAC 293", power: "RX", rxOnly: true },
+        { name: "7CALL70D", zone: "NIFOG Interop", band: "700/800", mode: "P25", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "700 MHz Secondary Incident Calling", rx: 773.25625, tx: 773.25625, bw: "12.5", tone: "NAC 293", power: "RX", rxOnly: true },
+        { name: "8CALL90", zone: "NIFOG Interop", band: "700/800", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "800 MHz National Calling Repeater", rx: 851.0125, tx: 806.0125, bw: "25", tone: "156.7", power: "RX", rxOnly: true },
+        { name: "8TAC91", zone: "NIFOG Interop", band: "700/800", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "800 MHz Tactical 1 Repeater", rx: 851.5125, tx: 806.5125, bw: "25", tone: "156.7", power: "RX", rxOnly: true },
+        { name: "8TAC92", zone: "NIFOG Interop", band: "700/800", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "800 MHz Tactical 2 Repeater", rx: 852.0125, tx: 807.0125, bw: "25", tone: "156.7", power: "RX", rxOnly: true },
+        { name: "8TAC93", zone: "NIFOG Interop", band: "700/800", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "800 MHz Tactical 3 Repeater", rx: 852.5125, tx: 807.5125, bw: "25", tone: "156.7", power: "RX", rxOnly: true },
+        { name: "8TAC94", zone: "NIFOG Interop", band: "700/800", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "800 MHz Tactical 4 Repeater", rx: 853.0125, tx: 808.0125, bw: "25", tone: "156.7", power: "RX", rxOnly: true }
+      ],
+
+      HamSimplex: [
+        { name: "2m CALL 146.52", zone: "Ham Simplex", band: "VHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "2m National FM Calling Frequency", rx: 146.5200, tx: 146.5200, bw: "25", tone: "None", power: "High", rxOnly: false },
+        { name: "2m SIMPLEX 55", zone: "Ham Simplex", band: "VHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "2m Secondary FM Simplex", rx: 146.5500, tx: 146.5500, bw: "25", tone: "None", power: "High", rxOnly: false },
+        { name: "2m SIMPLEX 58", zone: "Ham Simplex", band: "VHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "2m Tertiary FM Simplex", rx: 146.5800, tx: 146.5800, bw: "25", tone: "None", power: "High", rxOnly: false },
+        { name: "2m APRS 144.39", zone: "Ham Simplex", band: "VHF", mode: "Analog", service: "Amateur", agencyType: "APRS Data", desc: "North America APRS Packet Channel", rx: 144.3900, tx: 144.3900, bw: "25", tone: "None", power: "High", rxOnly: false },
+        { name: "2m DMR SIMP", zone: "Ham Simplex", band: "VHF", mode: "DMR", service: "Amateur", agencyType: "Amateur DMR", desc: "2m DMR National Simplex (CC1 TS1 TG99)", rx: 145.7900, tx: 145.7900, bw: "12.5", tone: "CC 1", power: "High", rxOnly: false },
+        { name: "1.25m CALL 223.5", zone: "Ham Simplex", band: "VHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "220 MHz National FM Calling", rx: 223.5000, tx: 223.5000, bw: "25", tone: "None", power: "High", rxOnly: false },
+        { name: "70cm CALL 446.0", zone: "Ham Simplex", band: "UHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "70cm National FM Calling Frequency", rx: 446.0000, tx: 446.0000, bw: "25", tone: "None", power: "High", rxOnly: false },
+        { name: "70cm SIMP 446.5", zone: "Ham Simplex", band: "UHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "70cm Secondary FM Simplex", rx: 446.5000, tx: 446.5000, bw: "25", tone: "None", power: "High", rxOnly: false },
+        { name: "70cm DMR SIMP", zone: "Ham Simplex", band: "UHF", mode: "DMR", service: "Amateur", agencyType: "Amateur DMR", desc: "70cm DMR National Simplex (CC1 TS1 TG99)", rx: 441.0000, tx: 441.0000, bw: "12.5", tone: "CC 1", power: "High", rxOnly: false },
+        { name: "70cm DMR 446.075", zone: "Ham Simplex", band: "UHF", mode: "DMR", service: "Amateur", agencyType: "Amateur DMR", desc: "70cm DMR Tactical Simplex (CC1 TS1 TG99)", rx: 446.0750, tx: 446.0750, bw: "12.5", tone: "CC 1", power: "High", rxOnly: false }
       ]
     };
 
@@ -686,7 +843,349 @@
     }
 
     // =========================================================================
-    // GEOMETRY & LOCALIZED RF SITE GENERATOR (WITH CLEAR ROLES & DESCRIPTIONS)
+    // RELAY STATUS & LIVE REPEATER API FETCHERS
+    // =========================================================================
+    function onRelayUrlChange(val) {
+      const clean = val.trim().replace(/\/$/, '');
+      localStorage.setItem('cf_relay_url', clean);
+      checkRelayStatus();
+    }
+
+    async function checkRelayStatus() {
+      const relay = document.getElementById('relayUrl').value.trim().replace(/\/$/, '');
+      const pill = document.getElementById('relayStatusPill');
+      const msg = document.getElementById('relayHelperMsg');
+
+      if (!relay) {
+        pill.textContent = 'Idle';
+        pill.className = 'text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400';
+        msg.textContent = 'No relay URL entered yet. Leave blank until your Cloudflare Worker & RepeaterBook key are ready.';
+        return;
+      }
+
+      pill.textContent = 'Checking...';
+      try {
+        const res = await fetch(`${relay}/status`);
+        const data = await res.json();
+        if (data.ok) {
+          const rbActive = data.repeaterbook === 'active';
+          const rrActive = data.radioreference === 'active';
+          if (rbActive) {
+            pill.textContent = 'RB: Active';
+            pill.className = 'text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+          } else {
+            pill.textContent = 'RB: Idle (No Key)';
+            pill.className = 'text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30';
+          }
+          msg.textContent = `Relay connected • RB: ${rbActive ? 'Live Ready' : 'Idle (awaiting RB_APP_TOKEN)'} • RR: ${rrActive ? 'Live Ready' : 'Idle (awaiting RR_APP_KEY)'}`;
+        } else {
+          throw new Error('Unexpected response');
+        }
+      } catch (e) {
+        pill.textContent = 'Unreachable';
+        pill.className = 'text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30';
+        msg.textContent = 'Could not reach Relay URL (check URL or ALLOWED_ORIGIN setting in Cloudflare).';
+      }
+    }
+
+    function normalizeFreqMHz(val) {
+      const n = parseFloat(val);
+      if (isNaN(n)) return 0;
+      if (n > 100000) return Number((n / 1e6).toFixed(5));
+      if (n > 2000) return Number((n / 1000).toFixed(5));
+      return Number(n.toFixed(5));
+    }
+
+    function normalizeOffsetMHz(val) {
+      const n = parseFloat(val);
+      if (isNaN(n)) return 0;
+      if (Math.abs(n) > 100000) return n / 1e6;
+      if (Math.abs(n) > 100) return n / 1000;
+      return n;
+    }
+
+    function mapHearHamRecord(rec, idx) {
+      const rx = normalizeFreqMHz(rec.frequency ?? rec.output ?? rec.output_freq ?? rec.rx);
+      if (!rx) return null;
+      const lat = parseFloat(rec.latitude ?? rec.lat);
+      const lon = parseFloat(rec.longitude ?? rec.lng ?? rec.lon);
+      if (isNaN(lat) || isNaN(lon)) return null;
+
+      let tx = normalizeFreqMHz(rec.input ?? rec.input_freq ?? rec.tx);
+      if (!tx) {
+        const off = normalizeOffsetMHz(rec.offset ?? 0);
+        tx = Number((rx + off).toFixed(5));
+      }
+
+      const rawMode = String(rec.mode ?? rec.modes ?? 'FM');
+      const mode = /dmr/i.test(rawMode) ? 'DMR'
+        : /p25/i.test(rawMode) ? 'P25'
+        : /d-?star|dstar/i.test(rawMode) ? 'D-STAR'
+        : /ysf|fusion|c4fm/i.test(rawMode) ? 'YSF'
+        : /nxdn/i.test(rawMode) ? 'NXDN'
+        : 'Analog';
+
+      const band = rx > 700 ? '700/800' : rx > 300 ? 'UHF' : 'VHF';
+      const toneRaw = rec.encode ?? rec.tone ?? rec.ctcss ?? rec.pl ?? rec.access ?? '';
+      const toneStr = toneRaw ? (String(toneRaw).match(/^\d/) ? `PL ${toneRaw} Hz` : String(toneRaw)) : 'CSQ / Open';
+      const loc = [rec.city, rec.state, rec.country].filter(Boolean).join(', ') || 'Reported Area';
+
+      return {
+        id: `HH-${rec.id ?? idx}`,
+        isTemplate: false,
+        source: 'HearHam Live',
+        call: String(rec.callsign ?? rec.call ?? `RPT-${rx.toFixed(3)}`).toUpperCase(),
+        siteName: loc,
+        agencyType: mode === 'Analog' ? 'Amateur Repeater' : `Amateur ${mode}`,
+        roleKey: 'Amateur',
+        service: 'Amateur',
+        band,
+        mode,
+        rx,
+        tx,
+        detail: toneStr,
+        encryption: rec.operational === 0 || rec.operational === false ? 'Reported Off-Air' : 'Verified Operational Listing',
+        notes: rec.description || rec.notes || `${band} ${mode} amateur repeater (${loc}) sourced live from HearHam.com.`,
+        lat,
+        lon,
+        rxOnly: false
+      };
+    }
+
+    async function fetchLiveHearHam() {
+      const statusEl = document.getElementById('liveApiStatus');
+      const btn = document.getElementById('btnFetchLive');
+      statusEl.textContent = 'Fetching...';
+      btn.disabled = true;
+
+      try {
+        if (!state.hearHamCache) {
+          const res = await fetch('https://hearham.com/api/repeaters/v1');
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          const arr = Array.isArray(data) ? data : (data.repeaters || data.results || []);
+          state.hearHamCache = arr.map(mapHearHamRecord).filter(Boolean);
+        }
+
+        const nearby = state.hearHamCache.filter(r => haversineMiles(state.lat, state.lon, r.lat, r.lon) <= Math.max(state.radiusMiles, 150));
+        state.liveSites = nearby.concat(state.liveSites.filter(s => s.source !== 'HearHam Live'));
+        rebuildRepeaterList();
+        statusEl.textContent = `Loaded ${nearby.length} live sites`;
+        document.getElementById('dataSourceBadge').textContent = `HearHam Live (${nearby.length} real ham sites) + Templates`;
+      } catch (err) {
+        statusEl.textContent = 'CORS/Offline';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function fetchOpenRepeater() {
+      const key = document.getElementById('openRepeaterKey').value.trim();
+      if (!key) return alert('Enter a free OpenRepeater API key (starts with or_) from openrepeater.org.');
+      const km = Math.round(state.radiusMiles * 1.60934);
+      const url = `https://www.openrepeater.org/api/v1/search?lat=${state.lat}&lon=${state.lon}&radius=${km}&api_key=${encodeURIComponent(key)}`;
+      try {
+        const res = await fetch(url);
+        const json = await res.json();
+        const items = json.data || json.repeaters || json.results || [];
+        const mapped = items.map((r, i) => mapHearHamRecord(r, `OR-${i}`)).filter(Boolean).map(x => ({ ...x, source: 'OpenRepeater API' }));
+        state.liveSites = mapped.concat(state.liveSites);
+        rebuildRepeaterList();
+        document.getElementById('liveApiStatus').textContent = `+${mapped.length} OpenRepeater`;
+      } catch (err) {
+        alert('OpenRepeater API request failed. Check your API key or network.');
+      }
+    }
+
+    async function fetchRepeaterBookRelay() {
+      const relay = document.getElementById('relayUrl').value.trim().replace(/\/$/, '');
+      if (!relay) {
+        document.getElementById('relayHelperMsg').textContent = 'Relay is idle—paste your Cloudflare Worker URL once deployed.';
+        return;
+      }
+      const statusEl = document.getElementById('liveApiStatus');
+      statusEl.textContent = 'Querying RepeaterBook...';
+
+      try {
+        const res = await fetch(`${relay}/repeaterbook?lat=${state.lat}&lng=${state.lon}&dist=${state.radiusMiles}`);
+        const data = await res.json();
+
+        if (data.idle) {
+          statusEl.textContent = 'RB Idle (No Key)';
+          document.getElementById('relayHelperMsg').textContent = data.error;
+          return;
+        }
+        if (data.ok === false) throw new Error(data.error || data.message || 'Auth error');
+
+        const rows = Array.isArray(data.results) ? data.results : (Array.isArray(data) ? data : []);
+        const mapped = rows.map((r, i) => {
+          const rx = parseFloat(r.Frequency || r['Downlink Freq'] || 0);
+          const tx = parseFloat(r['Input Freq'] || r['Uplink Freq'] || 0) || rx;
+          const lat = parseFloat(r.Lat || r.Latitude || state.lat);
+          const lon = parseFloat(r.Long || r.Longitude || state.lon);
+          if (!rx) return null;
+
+          const modes = [];
+          if (r.DMR === 'Yes') modes.push('DMR');
+          if (r['D-Star'] === 'Yes') modes.push('D-STAR');
+          if (r['System Fusion'] === 'Yes') modes.push('YSF');
+          if (r.P25 === 'Yes') modes.push('P25');
+          if (r.NXDN === 'Yes') modes.push('NXDN');
+          const mode = modes[0] || 'Analog';
+          const band = rx > 700 ? '700/800' : rx > 300 ? 'UHF' : 'VHF';
+          const tone = r.PL || r.TSQ || (r.DMR === 'Yes' && r['DMR Color Code'] ? `CC ${r['DMR Color Code']}` : 'CSQ');
+          const loc = [r['Nearest City'], r.County, r.State].filter(Boolean).join(', ');
+
+          return {
+            id: `RB-${r['Rptr ID'] || i}`,
+            isTemplate: false,
+            source: 'RepeaterBook Live',
+            call: r.Callsign || `RB-${rx.toFixed(3)}`,
+            siteName: loc || 'RepeaterBook Site',
+            agencyType: mode === 'Analog' ? 'Amateur Repeater' : `Amateur ${mode}`,
+            roleKey: 'Amateur',
+            service: 'Amateur',
+            band,
+            mode,
+            rx,
+            tx,
+            detail: String(tone),
+            encryption: r['Operational Status'] || 'On-Air',
+            notes: r.Notes || `${band} ${mode} repeater in ${loc} (Use: ${r.Use || 'OPEN'})`,
+            lat,
+            lon,
+            rxOnly: false
+          };
+        }).filter(Boolean);
+
+        state.liveSites = mapped.concat(state.liveSites.filter(s => s.source !== 'RepeaterBook Live'));
+        rebuildRepeaterList();
+        statusEl.textContent = `RepeaterBook: ${mapped.length} sites`;
+        document.getElementById('dataSourceBadge').innerHTML =
+          `Repeater data provided by <a href="https://www.repeaterbook.com" target="_blank" rel="noopener" class="underline text-emerald-300 hover:text-emerald-200">RepeaterBook.com</a> (${mapped.length} sites)`;
+      } catch (err) {
+        statusEl.textContent = 'RB Error';
+        alert(`RepeaterBook relay error: ${err.message}`);
+      }
+    }
+
+    async function fetchRadioReferenceRelay() {
+      const relay = document.getElementById('relayUrl').value.trim().replace(/\/$/, '');
+      const username = document.getElementById('rrUser').value.trim();
+      const password = document.getElementById('rrPass').value;
+      const zip = document.getElementById('rrZip').value.trim();
+      if (!relay) {
+        document.getElementById('relayHelperMsg').textContent = 'Relay is idle—paste your Cloudflare Worker URL first.';
+        return;
+      }
+      if (!username || !password || !zip) {
+        return alert('Enter your RadioReference Premium username, password, and 5-digit ZIP.');
+      }
+
+      const statusEl = document.getElementById('liveApiStatus');
+      statusEl.textContent = 'Querying RadioReference...';
+
+      try {
+        const res = await fetch(`${relay}/radioreference`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, zip })
+        });
+        const data = await res.json();
+
+        if (data.idle) {
+          statusEl.textContent = 'RR Idle (No Key)';
+          document.getElementById('relayHelperMsg').textContent = data.error;
+          return;
+        }
+        if (!data.ok) throw new Error(data.error || 'RadioReference login/ZIP lookup failed.');
+
+        const classifyRole = (txt) => {
+          const s = txt.toLowerCase();
+          if (/fire|fd\b|vfd/.test(s)) return { agencyType: 'Local Fire', roleKey: 'Fire' };
+          if (/ems|med|amb|rescue/.test(s)) return { agencyType: 'Local EMS', roleKey: 'EMS' };
+          if (/police|sheriff|law|patrol|pd\b|so\b/.test(s)) return { agencyType: 'Local Police / Sheriff', roleKey: 'Police' };
+          if (/interop|mutual|tac/.test(s)) return { agencyType: 'Mutual Aid / Interop', roleKey: 'Interop' };
+          return { agencyType: 'Public Safety / Municipal', roleKey: 'Utility' };
+        };
+
+        const convMapped = (data.conventional || []).map(c => {
+          const role = classifyRole(`${c.call} ${c.descr}`);
+          const mode = /p25/i.test(c.mode) ? 'P25' : /dmr/i.test(c.mode) ? 'DMR' : /nxdn/i.test(c.mode) ? 'NXDN' : 'Analog';
+          const band = c.rx > 700 ? '700/800' : c.rx > 300 ? 'UHF' : 'VHF';
+          return {
+            id: c.id,
+            isTemplate: false,
+            source: 'RadioReference Live',
+            call: c.call,
+            siteName: c.siteName,
+            agencyType: role.agencyType,
+            roleKey: role.roleKey,
+            service: 'Public Safety Conv',
+            band,
+            mode,
+            rx: c.rx,
+            tx: c.tx,
+            detail: c.tone,
+            encryption: c.enc === '1' || c.enc === '2' ? 'Encrypted (Verify)' : 'Clear',
+            notes: `${c.descr} (${data.countyName})`,
+            lat: c.lat || state.lat,
+            lon: c.lon || state.lon,
+            rxOnly: true
+          };
+        });
+
+        const trunkMapped = (data.trunked || []).map(sys => {
+          const band = sys.rx > 700 ? '700/800' : sys.rx > 300 ? 'UHF' : 'VHF';
+          const mode = /dmr/i.test(sys.sType) ? 'DMR' : /nxdn/i.test(sys.sType) ? 'NXDN' : 'P25';
+          return {
+            id: `RR-TRS-${sys.sid}`,
+            isTemplate: false,
+            source: 'RadioReference Live',
+            call: sys.sName,
+            siteName: `${sys.siteDescr} • ${data.countyName}`,
+            agencyType: 'Local Police / Fire / EMS',
+            roleKey: 'Police',
+            service: 'Trunked',
+            band,
+            mode,
+            rx: sys.rx,
+            tx: sys.rx,
+            detail: `SysID ${sys.sysid || sys.sid} / WACN ${sys.wacn || '-'} (${sys.allFreqs.length} ch)`,
+            encryption: 'See Talkgroup List',
+            notes: `${sys.sType} trunked system. Site freqs: ${sys.allFreqs.join(', ')}`,
+            lat: sys.lat || state.lat,
+            lon: sys.lon || state.lon,
+            rxOnly: true,
+            talkgroups: sys.talkgroups.map(t => ({
+              tgid: t.tgid,
+              alpha: t.alpha,
+              role: classifyRole(`${t.alpha} ${t.desc}`).agencyType,
+              mode: t.enc === '2' || t.enc === '1' ? `${mode}E (Encrypted)` : `${mode} (Clear)`,
+              desc: t.desc || t.alpha
+            }))
+          };
+        });
+
+        const allRr = [...trunkMapped, ...convMapped];
+        state.liveSites = allRr.concat(state.liveSites.filter(s => s.source !== 'RadioReference Live'));
+        if (data.lat && data.lon) {
+          state.placeName = data.city;
+          state.countyName = data.countyName;
+          updateMapCenter(data.lat, data.lon);
+        }
+        rebuildRepeaterList();
+        statusEl.textContent = `RR: ${allRr.length} sites`;
+        document.getElementById('dataSourceBadge').innerHTML =
+          `Data from <a href="https://www.radioreference.com" target="_blank" rel="noopener" class="underline text-orange-300">RadioReference.com</a> (${data.countyName})`;
+      } catch (err) {
+        statusEl.textContent = 'RR Error';
+        alert(`RadioReference relay error: ${err.message}`);
+      }
+    }
+
+    // =========================================================================
+    // GEOMETRY & PUBLIC SAFETY TEMPLATES
     // =========================================================================
     function haversineMiles(lat1, lon1, lat2, lon2) {
       const R = 3958.8;
@@ -710,16 +1209,15 @@
       return s - Math.floor(s);
     }
 
-    function generateLocalRfEnvironment(lat, lon) {
+    function generatePublicSafetyTemplates(lat, lon) {
       const city = state.placeName || 'Local';
       const county = state.countyName || `${city} County`;
       const st = state.stateAbbr || 'US';
 
       const templates = [
-        // TRUNKED PUBLIC SAFETY SYSTEMS (WITH TALKGROUPS)
         {
-          call: `${city} Metro 700/800 P25`,
-          siteName: `Downtown Simulcast Cell • ${city}, ${st}`,
+          call: `[TEMPLATE] ${city} 700/800 P25`,
+          siteName: `${city}, ${st} (Template — Pull RR or Import CSV)`,
           agencyType: "Local Police / Fire / EMS",
           roleKey: "Police",
           service: "Trunked",
@@ -727,73 +1225,35 @@
           mode: "P25",
           rx: 851.0125,
           tx: 806.0125,
-          detail: "P25 Phase II • WACN BEE00 / NAC 3A1",
-          encryption: "Mixed (Law Tac Enc / Fire & EMS Clear)",
-          notes: `Primary municipal 700/800 MHz P25 Phase II trunked simulcast system for ${city}. Control channel coordinates voice grants across Police, Fire, EMS & City Services talkgroups.`,
+          detail: "P25 Phase II Example (8CALL90 base)",
+          encryption: "Check RadioReference for Enc",
+          notes: `Placeholder template showing how a ${city} 700/800 MHz P25 Phase II trunked system structures Police, Fire & EMS talkgroups. Use RadioReference Relay or CSV import for exact local dispatch freqs.`,
           rxOnly: true,
           talkgroups: [
-            { tgid: 1001, alpha: `${city.slice(0,6)} PD DISP`, role: "Local Police", mode: "P25 (Clear)", desc: `${city} Police Dept — Main Patrol Dispatch (Central & North Sectors)` },
-            { tgid: 1002, alpha: `${city.slice(0,6)} PD TAC1`, role: "Local Police", mode: "P25E (Encrypted)", desc: `${city} Police Tactical / Narcotics (AES-256 Encrypted — Unmonitorable)` },
-            { tgid: 2001, alpha: `${city.slice(0,6)} FD DISP`, role: "Local Fire", mode: "P25 (Clear)", desc: `${city} Fire Dept — Station Alerting & Primary Structure Fire Dispatch` },
-            { tgid: 2005, alpha: `${city.slice(0,6)} FIREGND`, role: "Local Fire", mode: "P25 (Clear)", desc: `${city} Fireground Command & Tactical Operations Channel 2` },
-            { tgid: 3001, alpha: `${city.slice(0,6)} EMS 1`, role: "Local EMS", mode: "P25 (Clear)", desc: `${city} Municipal EMS / Ambulance Dispatch & Hospital Notification` },
-            { tgid: 4010, alpha: `${city.slice(0,6)} PUBWKS`, role: "Public Works", mode: "P25 (Clear)", desc: `Water, Street Maintenance & Traffic Signal Operations` }
+            { tgid: 1001, alpha: `PD DISP (EX)`, role: "Local Police", mode: "P25 (Example)", desc: `Example Local Police Patrol Dispatch TG — replace with county RR TGID` },
+            { tgid: 1002, alpha: `PD TAC (EX)`, role: "Local Police", mode: "P25E (Often Enc)", desc: `Tactical channels are commonly AES-encrypted (DE) in many cities` },
+            { tgid: 2001, alpha: `FD DISP (EX)`, role: "Local Fire", mode: "P25 (Example)", desc: `Example Local Fire Dispatch & Station Alerting TG` },
+            { tgid: 3001, alpha: `EMS DISP (EX)`, role: "Local EMS", mode: "P25 (Example)", desc: `Example Municipal EMS / Ambulance Dispatch TG` }
           ]
         },
         {
-          call: `${st} Statewide 700 Regional`,
-          siteName: `North Ridge Tower • ${county}, ${st}`,
-          agencyType: "State Police & Interop",
-          roleKey: "Interop",
-          service: "Trunked",
-          band: "700/800",
-          mode: "P25",
-          rx: 771.43125,
-          tx: 801.43125,
-          detail: "P25 Ph II • Site 012 / NAC 290",
-          encryption: "Clear Dispatch / Encrypted Tac",
-          notes: `Statewide 700 MHz regional trunked site covering highways, State Troopers, regional mutual aid, and air-medical helicopters around ${county}.`,
-          rxOnly: true,
-          talkgroups: [
-            { tgid: 5101, alpha: `${st} TROOP A`, role: "State Police", mode: "P25 (Clear)", desc: `State Highway Patrol — Regional Expressway & Interstate Dispatch` },
-            { tgid: 5200, alpha: `REG MEDEVAC`, role: "Local EMS", mode: "P25 (Clear)", desc: `Regional Air Ambulance / Trauma Center Landing Zone Coordination` },
-            { tgid: 5901, alpha: `${st} INTEROP1`, role: "Mutual Aid", mode: "P25 (Clear)", desc: `Statewide Law & Fire Cross-Jurisdiction Emergency Mutual Aid` }
-          ]
-        },
-        // CONVENTIONAL PUBLIC SAFETY (POLICE / SHERIFF / FIRE / EMS / INTEROP)
-        {
-          call: `${city} PD Conv Ch 1`,
-          siteName: `Municipal Annex • ${city}, ${st}`,
+          call: `[TEMPLATE] VLAW31 Law Interop`,
+          siteName: `Nationwide VHF • ${county}, ${st}`,
           agencyType: "Local Police",
           roleKey: "Police",
           service: "Public Safety Conv",
-          band: "UHF",
-          mode: "P25",
-          rx: 460.1250,
-          tx: 465.1250,
-          detail: "NAC $293 (Conventional P25)",
-          encryption: "Clear",
-          notes: `Conventional UHF P25 repeater for ${city} Police Patrol Dispatch & backup when trunked simulcast is offline.`,
-          rxOnly: true
-        },
-        {
-          call: `${county} Sheriff SO-1`,
-          siteName: `County Courthouse Hill • ${county}, ${st}`,
-          agencyType: "County Sheriff",
-          roleKey: "Police",
-          service: "Public Safety Conv",
           band: "VHF",
-          mode: "P25",
+          mode: "Analog",
           rx: 155.4750,
           tx: 155.4750,
-          detail: "NAC $293 (NLEEC / Sheriff)",
-          encryption: "Clear",
-          notes: `County Sheriff primary rural patrol dispatch & VHF National Law Enforcement Emergency Channel (NLEEC).`,
+          detail: "PL 156.7 Hz (Actual FCC NLEEC)",
+          encryption: "Clear Analog",
+          notes: `Actual FCC National Law Enforcement Emergency Channel (VLAW31 / NLEEC) used nationwide by Police & County Sheriffs for mutual aid.`,
           rxOnly: true
         },
         {
-          call: `${county} Fire Dispatch`,
-          siteName: `Central Fire Tower • ${county}, ${st}`,
+          call: `[TEMPLATE] VFIRE21 Fire Interop`,
+          siteName: `Nationwide VHF • ${county}, ${st}`,
           agencyType: "Local Fire",
           roleKey: "Fire",
           service: "Public Safety Conv",
@@ -801,155 +1261,44 @@
           mode: "Analog",
           rx: 154.2800,
           tx: 154.2800,
-          detail: "PL 156.7 Hz (VFIRE21)",
+          detail: "PL 156.7 Hz (Actual FCC VFIRE21)",
           encryption: "Clear Analog",
-          notes: `VHF Analog Fire Dispatch & Volunteer Pager Tone-Out for ${county} Fire Protection Districts & VFIRE21 Mutual Aid.`,
+          notes: `Actual FCC Nationwide Fire Mutual Aid channel (VFIRE21). Commonly active for county fire mutual aid & brush fires.`,
           rxOnly: true
         },
         {
-          call: `${city} EMS / Med-1`,
-          siteName: `Regional Medical Center • ${city}, ${st}`,
+          call: `[TEMPLATE] VMED28 EMS HEAR`,
+          siteName: `Nationwide VHF • ${city}, ${st}`,
           agencyType: "Local EMS",
           roleKey: "EMS",
           service: "Public Safety Conv",
-          band: "UHF",
+          band: "VHF",
           mode: "Analog",
-          rx: 462.9500,
-          tx: 467.9500,
-          detail: "PL 167.9 Hz (MED-9)",
+          rx: 155.3400,
+          tx: 155.3400,
+          detail: "PL 156.7 Hz (Actual FCC VMED28)",
           encryption: "Clear Analog",
-          notes: `UHF MED-9 EMS Ambulance Dispatch & Paramedic-to-ER Trauma Telemetry coordination.`,
+          notes: `Actual FCC Hospital Emergency Administrative Radio (HEAR / VMED28) for ambulance-to-hospital medical patches.`,
           rxOnly: true
         },
         {
-          call: `7TAC51D Regional Interop`,
-          siteName: `West Sector Relay • ${county}, ${st}`,
+          call: `[TEMPLATE] 7TAC51D Interop`,
+          siteName: `Nationwide 700 • ${county}, ${st}`,
           agencyType: "Mutual Aid / Interop",
           roleKey: "Interop",
           service: "Public Safety Conv",
           band: "700/800",
           mode: "P25",
-          rx: 773.85625,
-          tx: 803.85625,
-          detail: "NAC $293 (700MHz Interop)",
-          encryption: "Clear",
-          notes: `National 700 MHz Tactical Interoperability channel used for multi-agency disaster, SWAT, and brush-fire scenes.`,
+          rx: 769.14375,
+          tx: 769.14375,
+          detail: "NAC $293 (Actual FCC 7TAC51D)",
+          encryption: "Clear P25",
+          notes: `Actual FCC 700 MHz National Tactical Interoperability channel used for multi-agency disaster & tactical scenes.`,
           rxOnly: true
         },
-        // COMMERCIAL / UTILITY TRUNKED
         {
-          call: `${city} Transit & Power DMR`,
-          siteName: `South Industrial Tower • ${city}, ${st}`,
-          agencyType: "Public Works / Transit",
-          roleKey: "Utility",
-          service: "Trunked",
-          band: "UHF",
-          mode: "DMR",
-          rx: 461.2250,
-          tx: 466.2250,
-          detail: "DMR Cap+ / CC 4",
-          encryption: "Clear DMR",
-          notes: `Commercial DMR Capacity Plus trunked site carrying municipal transit buses, electric grid crews & arena security.`,
-          rxOnly: true,
-          talkgroups: [
-            { tgid: 11, alpha: `TRANSIT OPS`, role: "Public Works", mode: "DMR (Clear)", desc: `${city} Bus & Rail Dispatch Operations` },
-            { tgid: 22, alpha: `POWER LINE`, role: "Public Works", mode: "DMR (Clear)", desc: `Electric Utility Storm Restoration & Line Crews` }
-          ]
-        },
-        // AMATEUR, GMRS & MARINE
-        {
-          call: `W5LOC 2m ARES`,
-          siteName: `Main Water Tower • ${city}, ${st}`,
-          agencyType: "Amateur Repeater",
-          roleKey: "Amateur",
-          service: "Amateur",
-          band: "VHF",
-          mode: "Analog",
-          rx: 146.8800,
-          tx: 146.2800,
-          detail: "PL 110.9 Hz (-600 kHz)",
-          encryption: "Open Amateur",
-          notes: `Primary 2m FM Amateur Radio repeater used for weekly ARES/RACES nets & Skywarn severe weather spotting.`,
-          rxOnly: false
-        },
-        {
-          call: `K5DIG BrandMeister DMR`,
-          siteName: `East Broadcast Mast • ${county}, ${st}`,
-          agencyType: "Amateur DMR",
-          roleKey: "Amateur",
-          service: "Amateur",
-          band: "UHF",
-          mode: "DMR",
-          rx: 442.1500,
-          tx: 447.1500,
-          detail: "CC 1 / TS1 & TS2",
-          encryption: "Open Amateur",
-          notes: `BrandMeister networked UHF DMR repeater. TS1 for Worldwide/USA/TAC310; TS2 for Statewide & Local talkgroups.`,
-          rxOnly: false
-        },
-        {
-          call: `N5P25 MMDVM P25`,
-          siteName: `Tech Hill • ${city}, ${st}`,
-          agencyType: "Amateur P25",
-          roleKey: "Amateur",
-          service: "Amateur",
-          band: "UHF",
-          mode: "P25",
-          rx: 444.3250,
-          tx: 449.3250,
-          detail: "NAC $293 (P25 Ph 1)",
-          encryption: "Open Amateur",
-          notes: `Amateur P25 Phase 1 digital voice repeater linked to North America Reflector 10200.`,
-          rxOnly: false
-        },
-        {
-          call: `W5DST D-STAR VHF`,
-          siteName: `Civic Roof • ${city}, ${st}`,
-          agencyType: "Amateur D-STAR",
-          roleKey: "Amateur",
-          service: "Amateur",
-          band: "VHF",
-          mode: "D-STAR",
-          rx: 145.3100,
-          tx: 144.7100,
-          detail: "RPT1 C / REF001C",
-          encryption: "Open Amateur",
-          notes: `Icom D-STAR digital repeater with gateway access to REF001C / REF030C reflectors.`,
-          rxOnly: false
-        },
-        {
-          call: `K5YSF Fusion C4FM`,
-          siteName: `Airport Ridge • ${county}, ${st}`,
-          agencyType: "Amateur YSF",
-          roleKey: "Amateur",
-          service: "Amateur",
-          band: "UHF",
-          mode: "YSF",
-          rx: 443.7500,
-          tx: 448.7500,
-          detail: "DG-ID 00 / WIRES-X",
-          encryption: "Open Amateur",
-          notes: `Yaesu System Fusion C4FM digital repeater connected to regional WIRES-X room.`,
-          rxOnly: false
-        },
-        {
-          call: `N5NXD NXDN UHF`,
-          siteName: `West Mesa • ${county}, ${st}`,
-          agencyType: "Amateur NXDN",
-          roleKey: "Amateur",
-          service: "Amateur",
-          band: "UHF",
-          mode: "NXDN",
-          rx: 441.8750,
-          tx: 446.8750,
-          detail: "RAN 15 (6.25 kHz)",
-          encryption: "Open Amateur",
-          notes: `Kenwood/Icom NXDN 4800bps narrowband digital amateur repeater.`,
-          rxOnly: false
-        },
-        {
-          call: `WRQZ700 GMRS`,
-          siteName: `Oak Hill • ${county}, ${st}`,
+          call: `[TEMPLATE] GMRS Ch 20R`,
+          siteName: `${county}, ${st} (Standard GMRS Pair)`,
           agencyType: "GMRS Repeater",
           roleKey: "Amateur",
           service: "GMRS",
@@ -957,49 +1306,39 @@
           mode: "Analog",
           rx: 462.6750,
           tx: 467.6750,
-          detail: "PL 141.3 Hz (+5 MHz)",
-          encryption: "Open GMRS (License Req)",
-          notes: `Wide-area GMRS Ch 20R repeater serving family preparedness & regional GMRS net members.`,
-          rxOnly: false
-        },
-        {
-          call: `Port / Waterway Ch 12`,
-          siteName: `Harbor / River Sector • ${city}, ${st}`,
-          agencyType: "Marine / Port Ops",
-          roleKey: "Amateur",
-          service: "Marine",
-          band: "VHF",
-          mode: "Analog",
-          rx: 156.6000,
-          tx: 156.6000,
-          detail: "Ch 12 Port Operations",
-          encryption: "Open Marine VHF",
-          notes: `VHF Marine Channel 12 for Vessel Traffic Service (VTS), lock/bridge tenders & commercial harbor ops.`,
+          detail: "PL 141.3 Hz (+5 MHz Travel Tone)",
+          encryption: "GMRS License Req",
+          notes: `Standard FCC GMRS Ch 20R repeater pair (common national travel tone 141.3 Hz). Verify local trustee tone on MyGMRS.com.`,
           rxOnly: false
         }
       ];
 
-      state.repeaters = templates.map((t, idx) => {
-        const s1 = seededRand((lat * 100) + idx * 17.3);
-        const s2 = seededRand((lon * 100) + idx * 31.7);
+      state.templateSites = templates.map((t, idx) => {
+        const s1 = seededRand((lat * 100) + idx * 19.1);
+        const s2 = seededRand((lon * 100) + idx * 29.3);
         const angle = s1 * Math.PI * 2;
-        const distDeg = (0.04 + s2 * 0.95);
-        const rLat = lat + Math.sin(angle) * distDeg * 0.72;
-        const rLon = lon + Math.cos(angle) * distDeg / Math.max(0.2, Math.cos(lat * Math.PI / 180));
+        const distDeg = 0.02 + s2 * 0.14;
         return {
-          id: `SITE-${idx + 1}`,
+          id: `TPL-${idx + 1}`,
+          isTemplate: true,
+          source: 'Template / NIFOG',
           ...t,
-          lat: rLat,
-          lon: rLon,
-          rxOnly: Boolean(t.rxOnly)
+          lat: lat + Math.sin(angle) * distDeg,
+          lon: lon + Math.cos(angle) * distDeg
         };
       });
 
+      rebuildRepeaterList();
+    }
+
+    function rebuildRepeaterList() {
+      const imported = state.repeaters.filter(r => r.source === 'Imported CSV' || r.source === 'Imported JSON');
+      state.repeaters = [...imported, ...state.liveSites, ...state.templateSites];
       applyFilters();
     }
 
     // =========================================================================
-    // LOCATION GEOCODING (NOMINATIM WITH ADDRESS DETAILS + GPS)
+    // LOCATION GEOCODING (NOMINATIM + AUTO LIVE FETCH)
     // =========================================================================
     async function geocodeLocation() {
       const q = document.getElementById('locationInput').value.trim();
@@ -1013,7 +1352,8 @@
         state.countyName = "Local County";
         state.stateAbbr = `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
         updateMapCenter(lat, lon);
-        generateLocalRfEnvironment(lat, lon);
+        generatePublicSafetyTemplates(lat, lon);
+        fetchLiveHearHam();
         filterDmrDatabase();
         return;
       }
@@ -1031,7 +1371,8 @@
           state.countyName = addr.county || `${state.placeName} Area`;
           state.stateAbbr = addr['ISO3166-2-lvl4'] ? addr['ISO3166-2-lvl4'].split('-').pop() : (addr.state || '');
           updateMapCenter(lat, lon);
-          generateLocalRfEnvironment(lat, lon);
+          generatePublicSafetyTemplates(lat, lon);
+          fetchLiveHearHam();
           filterDmrDatabase();
         } else {
           alert('Location not found. Try City, State, ZIP, or "lat, lon".');
@@ -1051,7 +1392,8 @@
           state.countyName = "Local Area";
           state.stateAbbr = "GPS";
           updateMapCenter(latitude, longitude);
-          generateLocalRfEnvironment(latitude, longitude);
+          generatePublicSafetyTemplates(latitude, longitude);
+          fetchLiveHearHam();
           filterDmrDatabase();
         },
         () => alert('Unable to access GPS location.')
@@ -1077,6 +1419,7 @@
 
     function resetFilters() {
       document.querySelectorAll('.filter-band, .filter-mode, .filter-service').forEach(el => el.checked = true);
+      document.getElementById('hideTemplates').checked = false;
       document.getElementById('tableSearch').value = '';
       document.getElementById('roleFilter').value = 'ALL';
       document.getElementById('radiusSlider').value = 50;
@@ -1087,10 +1430,12 @@
       const bands = getCheckedValues('filter-band');
       const modes = getCheckedValues('filter-mode');
       const services = getCheckedValues('filter-service');
+      const hideTpl = document.getElementById('hideTemplates').checked;
       const roleFilter = document.getElementById('roleFilter').value;
       const query = document.getElementById('tableSearch').value.trim().toLowerCase();
 
       state.filteredRepeaters = state.repeaters
+        .filter(r => !hideTpl || !r.isTemplate)
         .map(r => ({
           ...r,
           distance: haversineMiles(state.lat, state.lon, r.lat, r.lon),
@@ -1120,8 +1465,7 @@
 
     function modeBadgeClass(mode, service) {
       if (service === 'Trunked') return 'badge-trunk';
-      const mapCls = { Analog: 'badge-analog', DMR: 'badge-dmr', P25: 'badge-p25', YSF: 'badge-ysf', 'D-STAR': 'badge-dstar', NXDN: 'badge-nxdn' };
-      return mapCls[mode] || 'badge-analog';
+      return { Analog: 'badge-analog', DMR: 'badge-dmr', P25: 'badge-p25', YSF: 'badge-ysf', 'D-STAR': 'badge-dstar', NXDN: 'badge-nxdn' }[mode] || 'badge-analog';
     }
 
     function roleBadgeClass(roleKey, agencyType) {
@@ -1144,12 +1488,16 @@
       state.filteredRepeaters.forEach(r => {
         const color = modePinColor(r.mode, r.service);
         const marker = L.circleMarker([r.lat, r.lon], {
-          radius: 7, color: '#0f172a', weight: 1.5, fillColor: color, fillOpacity: 0.9
+          radius: r.isTemplate ? 5 : 7,
+          color: r.isTemplate ? '#f59e0b' : '#0f172a',
+          weight: 1.5,
+          fillColor: color,
+          fillOpacity: r.isTemplate ? 0.55 : 0.9
         });
         marker.bindPopup(`
           <div style="min-width:220px;font-family:sans-serif;color:#0f172a">
             <div style="font-weight:700;font-size:13px">${r.call}</div>
-            <div style="font-size:11px;font-weight:600;color:#0369a1;margin-top:2px">${r.agencyType} • ${r.service}</div>
+            <div style="font-size:11px;font-weight:600;color:#0369a1;margin-top:2px">${r.agencyType} • ${r.source}</div>
             <div style="font-size:11px;color:#475569">${r.siteName} (${r.distance.toFixed(1)} mi ${r.bearing})</div>
             <div style="font-family:monospace;font-size:11px;margin:4px 0;background:#f1f5f9;padding:3px 5px;border-radius:4px">
               RX: ${r.rx.toFixed(4)} / TX: ${r.tx.toFixed(4)}<br>${r.detail}
@@ -1174,7 +1522,7 @@
     function renderRepeaterTable() {
       const tbody = document.getElementById('repeaterTableBody');
       if (state.filteredRepeaters.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">No repeaters or trunked systems match current filters within ${state.radiusMiles} miles.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">No sites match current filters within ${state.radiusMiles} miles. Click "Fetch Live Local Repeaters" or widen your radius.</td></tr>`;
         return;
       }
 
@@ -1182,9 +1530,9 @@
         const hasTgs = Array.isArray(r.talkgroups) && r.talkgroups.length > 0;
         const isExpanded = state.expandedTrunkIds.has(r.id);
         const mainRow = `
-          <tr class="hover:bg-slate-800/40 transition align-top">
+          <tr class="hover:bg-slate-800/40 transition align-top ${r.isTemplate ? 'bg-amber-950/10' : ''}">
             <td class="px-3 py-3 min-w-[180px]">
-              <div class="font-bold text-white font-mono text-[13px]">${r.call}</div>
+              <div class="font-bold ${r.isTemplate ? 'text-amber-200' : 'text-white'} font-mono text-[13px]">${r.call}</div>
               <div class="text-[11px] text-cyan-300 mt-0.5">${r.siteName}</div>
               <div class="text-[10px] text-slate-400 mt-0.5">${r.service}${r.rxOnly ? ' • <span class="text-rose-400 font-semibold">RX-Only</span>' : ''}</div>
             </td>
@@ -1192,13 +1540,14 @@
               <span class="inline-block px-2 py-0.5 rounded text-[11px] font-semibold ${roleBadgeClass(r.roleKey, r.agencyType)}">
                 ${r.agencyType}
               </span>
-              ${r.encryption ? `<div class="text-[10px] text-slate-400 mt-1">${r.encryption}</div>` : ''}
+              <div class="text-[10px] mt-1 font-mono ${r.isTemplate ? 'text-amber-400' : 'text-emerald-400'}">${r.source}</div>
+              ${r.encryption ? `<div class="text-[10px] text-slate-400">${r.encryption}</div>` : ''}
             </td>
             <td class="px-3 py-3 max-w-[300px]">
               <p class="text-[11px] text-slate-200 leading-relaxed">${r.notes}</p>
               ${hasTgs ? `
                 <button onclick="toggleTrunkExpand('${r.id}')" class="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-orange-300 hover:text-orange-200 underline">
-                  ${isExpanded ? '▼ Hide' : '▶ View'} ${r.talkgroups.length} Trunked Talkgroups (Police / Fire / EMS)
+                  ${isExpanded ? '▼ Hide' : '▶ View'} ${r.talkgroups.length} Trunked Talkgroups
                 </button>
               ` : ''}
             </td>
@@ -1255,13 +1604,25 @@
       }).join('');
     }
 
-    // Import RepeaterBook / RadioReference CSV with Location, Type & Description mapping
+    // Import RepeaterBook / RadioReference CSV or HearHam JSON
     function importRepeaterCSV(event) {
       const file = event.target.files[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (e) => {
-        const lines = e.target.result.split(/\r?\n/).filter(l => l.trim());
+        const text = e.target.result.trim();
+        if (file.name.endsWith('.json')) {
+          try {
+            const arr = JSON.parse(text);
+            const list = (Array.isArray(arr) ? arr : (arr.repeaters || arr.results || [])).map(mapHearHamRecord).filter(Boolean).map(x => ({ ...x, source: 'Imported JSON' }));
+            state.repeaters = list.concat(state.repeaters);
+            applyFilters();
+            alert(`Imported ${list.length} sites from ${file.name}`);
+          } catch { alert('Invalid JSON file.'); }
+          return;
+        }
+
+        const lines = text.split(/\r?\n/).filter(l => l.trim());
         if (lines.length < 2) return alert('CSV file appears empty.');
         const headers = parseCsvLine(lines[0]).map(h => h.toLowerCase());
         const idx = (names) => headers.findIndex(h => names.some(n => h.includes(n)));
@@ -1320,7 +1681,9 @@
           }
 
           imported.push({
-            id: `IMP-${i}`,
+            id: `IMP-${Date.now()}-${i}`,
+            isTemplate: false,
+            source: 'Imported CSV',
             call: (iCall >= 0 && cols[iCall]) ? cols[iCall] : `CH-${rx.toFixed(3)}`,
             siteName: (iLoc >= 0 && cols[iLoc]) ? cols[iLoc] : `${state.placeName} Area (Imported)`,
             agencyType,
@@ -1342,7 +1705,7 @@
         if (imported.length > 0) {
           state.repeaters = imported.concat(state.repeaters);
           applyFilters();
-          alert(`Imported ${imported.length} sites from ${file.name} with Location, Type & Description mapping.`);
+          alert(`Imported ${imported.length} sites from ${file.name}.`);
         } else {
           alert('Could not detect frequency columns in CSV.');
         }
@@ -1364,27 +1727,29 @@
     }
 
     // =========================================================================
-    // TAB 2: STATUTORY SERVICES RENDERING
+    // TAB 2: STATUTORY, MARINE, NIFOG & SIMPLEX RENDERING
     // =========================================================================
     function renderStatutoryTables() {
       const container = document.getElementById('statutoryCardsContainer');
       const sections = [
-        { key: 'FRS', title: 'FRS (Family Radio Service — 22 Ch)', sub: '462/467 MHz • Ch 8-14 max 0.5W • License-Free' },
-        { key: 'GMRS', title: 'GMRS (Simplex + 8 Repeater Pairs)', sub: '462/467 MHz • +5.0 MHz Offset on Repeaters • FCC License Req.' },
-        { key: 'MURS', title: 'MURS (Multi-Use Radio Service — 5 Ch)', sub: '151/154 MHz VHF • Max 2W • License-Free' },
-        { key: 'Marine', title: 'Marine VHF & NOAA Weather (WX1–WX7)', sub: '156–162 MHz • WX Channels locked RX-Only' }
+        { key: 'FRS', title: 'FRS (All 22 Channels)', sub: '462/467 MHz • Ch 8–14 max 0.5W • License-Free' },
+        { key: 'GMRS', title: 'GMRS (All 30: Ch 01–22 + 15R–22R)', sub: 'Includes Ch 8–14 (0.5W), High-Power Simplex & +5 MHz Repeaters' },
+        { key: 'MURS', title: 'MURS (All 5 Channels)', sub: '151/154 MHz VHF • Max 2W • License-Free' },
+        { key: 'Marine', title: `Full US Marine VHF (${STATUTORY_TABLES.Marine.length} Ch incl. AIS & WX1–7)`, sub: 'Complete Part 80 chart 01A–88A • USCG/DSC/AIS/WX locked RX-Only' },
+        { key: 'NIFOG', title: `NIFOG Public Safety Interop (${STATUTORY_TABLES.NIFOG.length} Ch)`, sub: 'VHF/UHF/700/800 National Calling & Tactical (RX-Only safe default)' },
+        { key: 'HamSimplex', title: 'Amateur National Calling & DMR Simplex', sub: '2m / 1.25m / 70cm FM Calling, APRS 144.39 & DMR Simplex' }
       ];
 
       container.innerHTML = sections.map(sec => {
         const rows = STATUTORY_TABLES[sec.key];
         return `
           <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
-            <div class="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+            <div class="px-4 py-3 border-b border-slate-800 flex items-center justify-between gap-2">
               <div>
                 <h3 class="text-sm font-bold text-white">${sec.title}</h3>
                 <p class="text-[11px] text-slate-400">${sec.sub}</p>
               </div>
-              <button onclick="addServiceZone('${sec.key}')" class="px-2.5 py-1 rounded bg-cyan-600/20 hover:bg-cyan-600 text-cyan-300 hover:text-white border border-cyan-500/30 text-xs font-semibold">
+              <button onclick="addServiceZone('${sec.key}')" class="shrink-0 px-2.5 py-1 rounded bg-cyan-600/20 hover:bg-cyan-600 text-cyan-300 hover:text-white border border-cyan-500/30 text-xs font-semibold">
                 + Add Zone
               </button>
             </div>
@@ -1396,10 +1761,10 @@
                 <tbody class="divide-y divide-slate-800/60">
                   ${rows.map(r => `
                     <tr class="hover:bg-slate-800/30">
-                      <td class="px-3 py-1.5 font-mono text-white">${r.name}</td>
+                      <td class="px-3 py-1.5 font-mono text-white whitespace-nowrap">${r.name}</td>
                       <td class="px-3 py-1.5 text-slate-400 text-[11px]">${r.desc}</td>
                       <td class="px-3 py-1.5 font-mono text-emerald-300">${r.rx.toFixed(4)}</td>
-                      <td class="px-3 py-1.5 font-mono text-slate-300">${r.rxOnly ? 'RX ONLY' : r.tx.toFixed(4)}</td>
+                      <td class="px-3 py-1.5 font-mono ${r.rxOnly ? 'text-rose-400' : 'text-slate-300'}">${r.rxOnly ? 'RX ONLY' : r.tx.toFixed(4)}</td>
                       <td class="px-3 py-1.5 font-mono text-amber-300">${r.power}</td>
                     </tr>
                   `).join('')}
@@ -1427,14 +1792,15 @@
           tx: ch.tx,
           bw: ch.bw,
           tone: ch.tone,
-          cc: '',
-          ts: '',
-          tg: '',
+          cc: ch.mode === 'DMR' ? '1' : '',
+          ts: ch.mode === 'DMR' ? '1' : '',
+          tg: ch.mode === 'DMR' ? 'Simplex (99)' : '',
+          tgId: ch.mode === 'DMR' ? 99 : '',
           rxOnly: ch.rxOnly
         });
       });
       renderCodeplugTable();
-      alert(`Added ${items.length} ${key} channels to Zone "${key}".`);
+      alert(`Added ${items.length} ${key} channels to your Codeplug.`);
     }
 
     // =========================================================================
@@ -1686,7 +2052,7 @@
       const tg = r.talkgroups[tgIdx];
       const enforceRxOnly = document.getElementById('rxOnlyPublicSafety')?.checked;
       pushChannelToCodeplug({
-        zone: r.call.slice(0, 16),
+        zone: r.call.replace('[TEMPLATE] ', '').slice(0, 16),
         name: tg.alpha.slice(0, 16),
         agencyType: tg.role,
         desc: `${tg.desc} [System: ${r.call}]`,
@@ -1716,7 +2082,6 @@
       const isSafety = r.service === 'Trunked' || r.service === 'Public Safety Conv';
       const rxOnly = r.rxOnly || (enforceRxOnly && isSafety);
 
-      // If Trunked System with defined talkgroups, add each talkgroup cleanly
       if (r.service === 'Trunked' && Array.isArray(r.talkgroups) && r.talkgroups.length > 0) {
         r.talkgroups.forEach((_, idx) => addTrunkTalkgroupToCodeplug(id, idx));
         return;
@@ -1753,7 +2118,7 @@
 
       pushChannelToCodeplug({
         zone: isSafety ? `${r.agencyType.slice(0, 16)}` : `${r.band} ${r.service}`,
-        name: r.call.slice(0, 16),
+        name: r.call.replace('[TEMPLATE] ', '').slice(0, 16),
         agencyType: r.agencyType,
         desc: r.notes,
         location: r.siteName,
@@ -1776,7 +2141,7 @@
     function addAllFilteredToCodeplug() {
       if (state.filteredRepeaters.length === 0) return alert('No filtered sites available.');
       state.filteredRepeaters.forEach(r => addRepeaterToCodeplug(r.id));
-      alert(`Added ${state.filteredRepeaters.length} local sites (including trunked talkgroups) to your Codeplug!`);
+      alert(`Added ${state.filteredRepeaters.length} sites to your Codeplug!`);
     }
 
     function pushChannelToCodeplug(ch) {
@@ -1800,7 +2165,7 @@
     function renderCodeplugTable() {
       const tbody = document.getElementById('codeplugTableBody');
       if (state.codeplugChannels.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-10 text-center text-slate-500">Your codeplug is empty. Add repeaters or trunked talkgroups from the Map or add FRS/GMRS/MURS/Marine Zones.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-10 text-center text-slate-500">Your codeplug is empty. Add repeaters from the Map or add FRS/GMRS/MURS/Marine/NIFOG Zones.</td></tr>`;
         return;
       }
 
@@ -1938,8 +2303,15 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      const savedRelay = localStorage.getItem('cf_relay_url');
+      if (savedRelay) {
+        document.getElementById('relayUrl').value = savedRelay;
+        checkRelayStatus();
+      }
+
       initMap();
-      generateLocalRfEnvironment(state.lat, state.lon);
+      generatePublicSafetyTemplates(state.lat, state.lon);
+      fetchLiveHearHam();
       renderStatutoryTables();
       renderTalkgroups();
       seedSampleDmrDatabase();
@@ -1949,3 +2321,4 @@
   </script>
 </body>
 </html>
+```
