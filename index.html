@@ -27,8 +27,25 @@
 
   <style>
     body { background-color: #090e1a; color: #e2e8f0; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
-    .leaflet-container { background: #0f172a; }
+    .leaflet-container { background: #0b1120; }
     .leaflet-container img { max-width: none !important; }
+
+    /* OpenStreetMap Dark Theme (100% Free, Zero API Keys) */
+    .dark-tiles .leaflet-tile {
+      filter: invert(100%) hue-rotate(180deg) brightness(85%) contrast(90%);
+    }
+    .leaflet-control-layers {
+      background: #0f172a !important;
+      color: #e2e8f0 !important;
+      border: 1px solid #334155 !important;
+      border-radius: 6px !important;
+      font-size: 11px !important;
+    }
+    .leaflet-control-layers label {
+      color: #e2e8f0 !important;
+      cursor: pointer;
+    }
+
     .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
     .custom-scroll::-webkit-scrollbar-track { background: #0f172a; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
@@ -606,7 +623,7 @@
     Data courtesy of <a href="https://www.repeaterbook.com" target="_blank" rel="noopener" class="text-emerald-400 hover:underline font-medium">RepeaterBook.com</a>. •
     Additional lookups: <a href="https://hearham.com" target="_blank" rel="noopener" class="text-cyan-400 hover:underline font-medium">HearHam.com</a>,
     <a href="https://www.radioreference.com" target="_blank" rel="noopener" class="text-orange-400 hover:underline font-medium">RadioReference.com</a>,
-    <a href="https://radioid.net" target="_blank" rel="noopener" class="text-amber-400 hover:underline font-medium">RadioID.net</a>.
+    and <a href="https://radioid.net" target="_blank" rel="noopener" class="text-amber-400 hover:underline font-medium">RadioID.net</a>.
   </footer>
 
   <script>
@@ -668,7 +685,7 @@
     };
 
     // =========================================================================
-    // COMPLETE STATUTORY, MARINE, NIFOG INTEROP & AMATEUR SIMPLEX TABLES
+    // STATUTORY, MARINE, NIFOG INTEROP & AMATEUR SIMPLEX TABLES
     // =========================================================================
     const STATUTORY_TABLES = {
       FRS: Array.from({ length: 22 }, (_, i) => {
@@ -687,7 +704,7 @@
           name: `GMRS ${String(i + 1).padStart(2, '0')}`, zone: "GMRS", band: "UHF", mode: "Analog", service: "GMRS", agencyType: "GMRS Simplex", desc: `GMRS Ch ${i + 1} Interstitial (5W max)`, rx: f, tx: f, bw: "20", tone: "None", power: "5W", rxOnly: false
         })),
         ...[467.5625, 467.5875, 467.6125, 467.6375, 467.6625, 467.6875, 467.7125].map((f, i) => ({
-          name: `GMRS ${String(i + 8).padStart(2, '0')}`, zone: "GMRS", band: "UHF", mode: "Analog", service: "GMRS", agencyType: "GMRS Low-Power", desc: `GMRS Ch ${i + 8} Handheld Interstitial (0.5W max, 12.5kHz)`, rx: f, tx: f, bw: "12.5", tone: "None", power: "0.5W", rxOnly: false
+          name: `GMRS ${String(i + 8).padStart(2, '0')}`, zone: "GMRS", band: "UHF", mode: "Analog", service: "GMRS", agencyType: "GMRS Low-Power", desc: `GMRS Ch ${i + 8} Handheld Interstitial (0.5W max)`, rx: f, tx: f, bw: "12.5", tone: "None", power: "0.5W", rxOnly: false
         })),
         ...[462.5500, 462.5750, 462.6000, 462.6250, 462.6500, 462.6750, 462.7000, 462.7250].map((f, i) => ({
           name: `GMRS ${i + 15}`, zone: "GMRS", band: "UHF", mode: "Analog", service: "GMRS", agencyType: "GMRS Simplex", desc: `GMRS Ch ${i + 15} Primary High-Power (50W max)`, rx: f, tx: f, bw: "25", tone: "None", power: "50W", rxOnly: false
@@ -706,118 +723,140 @@
       ],
 
       Marine: [
-        { name: "MAR 01A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port/VTS", desc: "Port Ops & Commercial VTS (Lower MS)", rx: 156.0500, tx: 156.0500, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 05A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port/VTS", desc: "Port Ops & VTS (Houston/Seattle/NOLA)", rx: 156.2500, tx: 156.2500, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 06", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Safety", desc: "Intership Safety & SAR", rx: 156.3000, tx: 156.3000, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 07A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Commercial", desc: "Commercial Working", rx: 156.3500, tx: 156.3500, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 08", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Commercial", desc: "Commercial Intership Only", rx: 156.4000, tx: 156.4000, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 09", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Calling", desc: "Boater Calling Channel", rx: 156.4500, tx: 156.4500, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 10", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Commercial", desc: "Commercial Working", rx: 156.5000, tx: 156.5000, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 11", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Commercial", desc: "Commercial / VTS Selected Areas", rx: 156.5500, tx: 156.5500, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 12", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port/VTS", desc: "Port Operations / VTS", rx: 156.6000, tx: 156.6000, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 13", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Nav", desc: "Bridge-to-Bridge Navigation (1W limit)", rx: 156.6500, tx: 156.6500, bw: "25", tone: "None", power: "1W", rxOnly: false },
-        { name: "MAR 14", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port/VTS", desc: "Port Operations / VTS", rx: 156.7000, tx: 156.7000, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 15 RX", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Environmental", desc: "Environmental / EPIRB Beacon (RX Only)", rx: 156.7500, tx: 156.7500, bw: "25", tone: "None", power: "RX", rxOnly: true },
-        { name: "MAR 16", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Distress", desc: "International Distress, Safety & Calling", rx: 156.8000, tx: 156.8000, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 17", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "State Control", desc: "State & Local Govt Maritime Control (1W)", rx: 156.8500, tx: 156.8500, bw: "25", tone: "None", power: "1W", rxOnly: false },
-        { name: "MAR 18A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Commercial", desc: "Commercial Working", rx: 156.9000, tx: 156.9000, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 19A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Commercial", desc: "Commercial Working", rx: 156.9500, tx: 156.9500, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 20", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port Ops", desc: "Port Operations (Duplex 157.000/161.600)", rx: 161.6000, tx: 157.0000, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 20A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port Ops", desc: "Port Operations Simplex", rx: 157.0000, tx: 157.0000, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 21A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "US Coast Guard", desc: "USCG Only (RX-Safe Default)", rx: 157.0500, tx: 157.0500, bw: "25", tone: "None", power: "RX", rxOnly: true },
-        { name: "MAR 22A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "US Coast Guard", desc: "USCG Liaison & Safety Broadcasts", rx: 157.1000, tx: 157.1000, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 23A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "US Coast Guard", desc: "USCG Only (RX-Safe Default)", rx: 157.1500, tx: 157.1500, bw: "25", tone: "None", power: "RX", rxOnly: true },
-        { name: "MAR 24", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Operator", desc: "Public Correspondence Duplex", rx: 161.8000, tx: 157.2000, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 25", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Operator", desc: "Public Correspondence Duplex", rx: 161.8500, tx: 157.2500, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 26", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Operator", desc: "Public Correspondence Duplex", rx: 161.9000, tx: 157.3000, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 27", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Operator", desc: "Public Correspondence Duplex", rx: 161.9500, tx: 157.3500, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 28", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Operator", desc: "Public Correspondence Duplex", rx: 162.0000, tx: 157.4000, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 63A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port/VTS", desc: "Port Ops / VTS (Lower MS)", rx: 156.1750, tx: 156.1750, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 65A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port Ops", desc: "Port Operations", rx: 156.2750, tx: 156.2750, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 66A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port Ops", desc: "Port Operations", rx: 156.3250, tx: 156.3250, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 67", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Commercial", desc: "Commercial Bridge-to-Bridge Intership", rx: 156.3750, tx: 156.3750, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 68", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Non-Commercial", desc: "Recreational Working Channel", rx: 156.4250, tx: 156.4250, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 69", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Non-Commercial", desc: "Recreational Working Channel", rx: 156.4750, tx: 156.4750, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 70 DSC", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "DSC Data", desc: "Digital Selective Calling (No Voice — RX Only)", rx: 156.5250, tx: 156.5250, bw: "25", tone: "None", power: "RX", rxOnly: true },
-        { name: "MAR 71", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Non-Commercial", desc: "Recreational Working Channel", rx: 156.5750, tx: 156.5750, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 72", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Non-Commercial", desc: "Recreational Intership Only", rx: 156.6250, tx: 156.6250, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 73", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port Ops", desc: "Port Operations", rx: 156.6750, tx: 156.6750, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 74", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port Ops", desc: "Port Operations", rx: 156.7250, tx: 156.7250, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 77", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Port Ops", desc: "Port Operations Intership Pilot", rx: 156.8750, tx: 156.8750, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 78A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Non-Commercial", desc: "Recreational Working Channel", rx: 156.9250, tx: 156.9250, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 79A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Commercial", desc: "Commercial (Non-Comm in Great Lakes)", rx: 156.9750, tx: 156.9750, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 80A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Commercial", desc: "Commercial (Non-Comm in Great Lakes)", rx: 157.0250, tx: 157.0250, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 81A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "US Govt", desc: "US Govt Environmental Ops (RX-Safe)", rx: 157.0750, tx: 157.0750, bw: "25", tone: "None", power: "RX", rxOnly: true },
-        { name: "MAR 82A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "US Govt", desc: "US Govt Only (RX-Safe)", rx: 157.1250, tx: 157.1250, bw: "25", tone: "None", power: "RX", rxOnly: true },
-        { name: "MAR 83A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "US Coast Guard", desc: "USCG Only (RX-Safe)", rx: 157.1750, tx: 157.1750, bw: "25", tone: "None", power: "RX", rxOnly: true },
-        { name: "MAR 84", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Operator", desc: "Public Correspondence Duplex", rx: 161.8250, tx: 157.2250, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 85", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Operator", desc: "Public Correspondence Duplex", rx: 161.8750, tx: 157.2750, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 86", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Operator", desc: "Public Correspondence Duplex", rx: 161.9250, tx: 157.3250, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 87A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Operator", desc: "Public Correspondence", rx: 157.3750, tx: 157.3750, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "MAR 88A", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Commercial", desc: "Commercial Intership Only", rx: 157.4250, tx: 157.4250, bw: "25", tone: "None", power: "25W", rxOnly: false },
-        { name: "AIS 1", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "AIS Data", desc: "Marine AIS Vessel Tracking Ch A (RX Only)", rx: 161.9750, tx: 161.9750, bw: "25", tone: "None", power: "RX", rxOnly: true },
-        { name: "AIS 2", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "AIS Data", desc: "Marine AIS Vessel Tracking Ch B (RX Only)", rx: 162.0250, tx: 162.0250, bw: "25", tone: "None", power: "RX", rxOnly: true },
-        { name: "WX1 NOAA", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "NOAA Weather", desc: "NOAA Weather Radio Ch 1 (RX Only)", rx: 162.5500, tx: 162.5500, bw: "25", tone: "None", power: "RX", rxOnly: true },
-        { name: "WX2 NOAA", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "NOAA Weather", desc: "NOAA Weather Radio Ch 2 (RX Only)", rx: 162.4000, tx: 162.4000, bw: "25", tone: "None", power: "RX", rxOnly: true },
-        { name: "WX3 NOAA", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "NOAA Weather", desc: "NOAA Weather Radio Ch 3 (RX Only)", rx: 162.4750, tx: 162.4750, bw: "25", tone: "None", power: "RX", rxOnly: true },
-        { name: "WX4 NOAA", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "NOAA Weather", desc: "NOAA Weather Radio Ch 4 (RX Only)", rx: 162.4250, tx: 162.4250, bw: "25", tone: "None", power: "RX", rxOnly: true },
-        { name: "WX5 NOAA", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "NOAA Weather", desc: "NOAA Weather Radio Ch 5 (RX Only)", rx: 162.4500, tx: 162.4500, bw: "25", tone: "None", power: "RX", rxOnly: true },
-        { name: "WX6 NOAA", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "NOAA Weather", desc: "NOAA Weather Radio Ch 6 (RX Only)", rx: 162.5000, tx: 162.5000, bw: "25", tone: "None", power: "RX", rxOnly: true },
-        { name: "WX7 NOAA", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "NOAA Weather", desc: "NOAA Weather Radio Ch 7 (RX Only)", rx: 162.5250, tx: 162.5250, bw: "25", tone: "None", power: "RX", rxOnly: true }
-      ],
+        ["MAR 01A","Port/VTS","Port Ops & VTS",156.05,156.05,"25W",false],
+        ["MAR 05A","Port/VTS","Port Ops & VTS",156.25,156.25,"25W",false],
+        ["MAR 06","Marine Safety","Intership Safety & SAR",156.3,156.3,"25W",false],
+        ["MAR 07A","Commercial","Commercial Working",156.35,156.35,"25W",false],
+        ["MAR 08","Commercial","Commercial Intership Only",156.4,156.4,"25W",false],
+        ["MAR 09","Marine Calling","Boater Calling Channel",156.45,156.45,"25W",false],
+        ["MAR 10","Commercial","Commercial Working",156.5,156.5,"25W",false],
+        ["MAR 11","Commercial","Commercial / VTS",156.55,156.55,"25W",false],
+        ["MAR 12","Port/VTS","Port Operations / VTS",156.6,156.6,"25W",false],
+        ["MAR 13","Marine Nav","Bridge-to-Bridge Nav (1W)",156.65,156.65,"1W",false],
+        ["MAR 14","Port/VTS","Port Operations / VTS",156.7,156.7,"25W",false],
+        ["MAR 15 RX","Environmental","Environmental / EPIRB (RX)",156.75,156.75,"RX",true],
+        ["MAR 16","Marine Distress","Intl Distress, Safety & Calling",156.8,156.8,"25W",false],
+        ["MAR 17","State Control","State/Local Govt Maritime (1W)",156.85,156.85,"1W",false],
+        ["MAR 18A","Commercial","Commercial Working",156.9,156.9,"25W",false],
+        ["MAR 19A","Commercial","Commercial Working",156.95,156.95,"25W",false],
+        ["MAR 20","Port Ops","Port Operations (Duplex)",161.6,157.0,"25W",false],
+        ["MAR 20A","Port Ops","Port Operations Simplex",157.0,157.0,"25W",false],
+        ["MAR 21A","US Coast Guard","USCG Only (RX-Safe Default)",157.05,157.05,"RX",true],
+        ["MAR 22A","US Coast Guard","USCG Liaison & Broadcasts",157.1,157.1,"25W",false],
+        ["MAR 23A","US Coast Guard","USCG Only (RX-Safe Default)",157.15,157.15,"RX",true],
+        ["MAR 24","Marine Operator","Public Correspondence",161.8,157.2,"25W",false],
+        ["MAR 25","Marine Operator","Public Correspondence",161.85,157.25,"25W",false],
+        ["MAR 26","Marine Operator","Public Correspondence",161.9,157.3,"25W",false],
+        ["MAR 27","Marine Operator","Public Correspondence",161.95,157.35,"25W",false],
+        ["MAR 28","Marine Operator","Public Correspondence",162.0,157.4,"25W",false],
+        ["MAR 63A","Port/VTS","Port Ops / VTS",156.175,156.175,"25W",false],
+        ["MAR 65A","Port Ops","Port Operations",156.275,156.275,"25W",false],
+        ["MAR 66A","Port Ops","Port Operations",156.325,156.325,"25W",false],
+        ["MAR 67","Commercial","Bridge-to-Bridge Intership",156.375,156.375,"25W",false],
+        ["MAR 68","Non-Commercial","Recreational Working",156.425,156.425,"25W",false],
+        ["MAR 69","Non-Commercial","Recreational Working",156.475,156.475,"25W",false],
+        ["MAR 70 DSC","DSC Data","Digital Selective Calling (RX)",156.525,156.525,"RX",true],
+        ["MAR 71","Non-Commercial","Recreational Working",156.575,156.575,"25W",false],
+        ["MAR 72","Non-Commercial","Recreational Intership Only",156.625,156.625,"25W",false],
+        ["MAR 73","Port Ops","Port Operations",156.675,156.675,"25W",false],
+        ["MAR 74","Port Ops","Port Operations",156.725,156.725,"25W",false],
+        ["MAR 77","Port Ops","Port Operations Pilot",156.875,156.875,"25W",false],
+        ["MAR 78A","Non-Commercial","Recreational Working",156.925,156.925,"25W",false],
+        ["MAR 79A","Commercial","Commercial Working",156.975,156.975,"25W",false],
+        ["MAR 80A","Commercial","Commercial Working",157.025,157.025,"25W",false],
+        ["MAR 81A","US Govt","US Govt Environmental (RX)",157.075,157.075,"RX",true],
+        ["MAR 82A","US Govt","US Govt Only (RX)",157.125,157.125,"RX",true],
+        ["MAR 83A","US Coast Guard","USCG Only (RX)",157.175,157.175,"RX",true],
+        ["MAR 84","Marine Operator","Public Correspondence",161.825,157.225,"25W",false],
+        ["MAR 85","Marine Operator","Public Correspondence",161.875,157.275,"25W",false],
+        ["MAR 86","Marine Operator","Public Correspondence",161.925,157.325,"25W",false],
+        ["MAR 87A","Marine Operator","Public Correspondence",157.375,157.375,"25W",false],
+        ["MAR 88A","Commercial","Commercial Intership Only",157.425,157.425,"25W",false],
+        ["AIS 1","AIS Data","Marine AIS Vessel Tracking A (RX)",161.975,161.975,"RX",true],
+        ["AIS 2","AIS Data","Marine AIS Vessel Tracking B (RX)",162.025,162.025,"RX",true],
+        ["WX1 NOAA","NOAA Weather","NOAA WX Radio 1 (RX Only)",162.55,162.55,"RX",true],
+        ["WX2 NOAA","NOAA Weather","NOAA WX Radio 2 (RX Only)",162.4,162.4,"RX",true],
+        ["WX3 NOAA","NOAA Weather","NOAA WX Radio 3 (RX Only)",162.475,162.475,"RX",true],
+        ["WX4 NOAA","NOAA Weather","NOAA WX Radio 4 (RX Only)",162.425,162.425,"RX",true],
+        ["WX5 NOAA","NOAA Weather","NOAA WX Radio 5 (RX Only)",162.45,162.45,"RX",true],
+        ["WX6 NOAA","NOAA Weather","NOAA WX Radio 6 (RX Only)",162.5,162.5,"RX",true],
+        ["WX7 NOAA","NOAA Weather","NOAA WX Radio 7 (RX Only)",162.525,162.525,"RX",true]
+      ].map(([name, agencyType, desc, rx, tx, power, rxOnly]) => ({
+        name, zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType, desc, rx, tx, bw: "25", tone: "None", power, rxOnly
+      })),
 
       NIFOG: [
-        { name: "VCALL10", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "VHF National Calling Channel (RX-Safe Default)", rx: 155.7525, tx: 155.7525, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
-        { name: "VTAC11", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "VHF Tactical Interop 1", rx: 151.1375, tx: 151.1375, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
-        { name: "VTAC12", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "VHF Tactical Interop 2", rx: 154.4525, tx: 154.4525, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
-        { name: "VTAC13", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "VHF Tactical Interop 3", rx: 158.7375, tx: 158.7375, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
-        { name: "VTAC14", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "VHF Tactical Interop 4", rx: 159.4725, tx: 159.4725, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
-        { name: "VFIRE21", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Local Fire", desc: "VHF Fire Interop Primary (154.280)", rx: 154.2800, tx: 154.2800, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
-        { name: "VFIRE22", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Local Fire", desc: "VHF Fire Interop Secondary", rx: 154.2650, tx: 154.2650, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
-        { name: "VFIRE23", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Local Fire", desc: "VHF Fire Interop Tertiary", rx: 154.2950, tx: 154.2950, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
-        { name: "VMED28", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Local EMS", desc: "VHF Medical / Ambulance-to-Hospital HEAR", rx: 155.3400, tx: 155.3400, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
-        { name: "VLAW31", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Local Police", desc: "VHF National Law Enforcement Interop (NLEEC)", rx: 155.4750, tx: 155.4750, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
-        { name: "NATSAR", zone: "NIFOG Interop", band: "VHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "National Search & Rescue (VSAR16)", rx: 155.1600, tx: 155.1600, bw: "12.5", tone: "127.3", power: "RX", rxOnly: true },
-        { name: "UCALL40", zone: "NIFOG Interop", band: "UHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "UHF National Calling Repeater (+5 MHz)", rx: 453.2125, tx: 458.2125, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
-        { name: "UTAC41", zone: "NIFOG Interop", band: "UHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "UHF Tactical Interop 1 Repeater", rx: 453.4625, tx: 458.4625, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
-        { name: "UTAC42", zone: "NIFOG Interop", band: "UHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "UHF Tactical Interop 2 Repeater", rx: 453.7125, tx: 458.7125, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
-        { name: "UTAC43", zone: "NIFOG Interop", band: "UHF", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "UHF Tactical Interop 3 Repeater", rx: 453.8625, tx: 458.8625, bw: "12.5", tone: "156.7", power: "RX", rxOnly: true },
-        { name: "7CALL50D", zone: "NIFOG Interop", band: "700/800", mode: "P25", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "700 MHz National Calling Direct (NAC $293)", rx: 769.24375, tx: 769.24375, bw: "12.5", tone: "NAC 293", power: "RX", rxOnly: true },
-        { name: "7TAC51D", zone: "NIFOG Interop", band: "700/800", mode: "P25", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "700 MHz General Tactical Direct (NAC $293)", rx: 769.14375, tx: 769.14375, bw: "12.5", tone: "NAC 293", power: "RX", rxOnly: true },
-        { name: "7TAC52D", zone: "NIFOG Interop", band: "700/800", mode: "P25", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "700 MHz General Tactical 2 Direct", rx: 769.64375, tx: 769.64375, bw: "12.5", tone: "NAC 293", power: "RX", rxOnly: true },
-        { name: "7CALL70D", zone: "NIFOG Interop", band: "700/800", mode: "P25", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "700 MHz Secondary Incident Calling", rx: 773.25625, tx: 773.25625, bw: "12.5", tone: "NAC 293", power: "RX", rxOnly: true },
-        { name: "8CALL90", zone: "NIFOG Interop", band: "700/800", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "800 MHz National Calling Repeater", rx: 851.0125, tx: 806.0125, bw: "25", tone: "156.7", power: "RX", rxOnly: true },
-        { name: "8TAC91", zone: "NIFOG Interop", band: "700/800", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "800 MHz Tactical 1 Repeater", rx: 851.5125, tx: 806.5125, bw: "25", tone: "156.7", power: "RX", rxOnly: true },
-        { name: "8TAC92", zone: "NIFOG Interop", band: "700/800", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "800 MHz Tactical 2 Repeater", rx: 852.0125, tx: 807.0125, bw: "25", tone: "156.7", power: "RX", rxOnly: true },
-        { name: "8TAC93", zone: "NIFOG Interop", band: "700/800", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "800 MHz Tactical 3 Repeater", rx: 852.5125, tx: 807.5125, bw: "25", tone: "156.7", power: "RX", rxOnly: true },
-        { name: "8TAC94", zone: "NIFOG Interop", band: "700/800", mode: "Analog", service: "Public Safety Conv", agencyType: "Mutual Aid / Interop", desc: "800 MHz Tactical 4 Repeater", rx: 853.0125, tx: 808.0125, bw: "25", tone: "156.7", power: "RX", rxOnly: true }
-      ],
+        ["VCALL10","VHF","Analog","Public Safety Conv","Mutual Aid / Interop","VHF National Calling (RX-Safe)",155.7525,155.7525,"12.5","156.7"],
+        ["VTAC11","VHF","Analog","Public Safety Conv","Mutual Aid / Interop","VHF Tactical Interop 1",151.1375,151.1375,"12.5","156.7"],
+        ["VTAC12","VHF","Analog","Public Safety Conv","Mutual Aid / Interop","VHF Tactical Interop 2",154.4525,154.4525,"12.5","156.7"],
+        ["VTAC13","VHF","Analog","Public Safety Conv","Mutual Aid / Interop","VHF Tactical Interop 3",158.7375,158.7375,"12.5","156.7"],
+        ["VTAC14","VHF","Analog","Public Safety Conv","Mutual Aid / Interop","VHF Tactical Interop 4",159.4725,159.4725,"12.5","156.7"],
+        ["VFIRE21","VHF","Analog","Public Safety Conv","Local Fire","VHF Fire Interop Primary (154.280)",154.28,154.28,"12.5","156.7"],
+        ["VFIRE22","VHF","Analog","Public Safety Conv","Local Fire","VHF Fire Interop Secondary",154.265,154.265,"12.5","156.7"],
+        ["VFIRE23","VHF","Analog","Public Safety Conv","Local Fire","VHF Fire Interop Tertiary",154.295,154.295,"12.5","156.7"],
+        ["VMED28","VHF","Analog","Public Safety Conv","Local EMS","VHF Medical HEAR Hospital Net",155.34,155.34,"12.5","156.7"],
+        ["VLAW31","VHF","Analog","Public Safety Conv","Local Police","VHF National Law Enforcement NLEEC",155.475,155.475,"12.5","156.7"],
+        ["NATSAR","VHF","Analog","Public Safety Conv","Mutual Aid / Interop","National Search & Rescue VSAR16",155.16,155.16,"12.5","127.3"],
+        ["UCALL40","UHF","Analog","Public Safety Conv","Mutual Aid / Interop","UHF National Calling Repeater",453.2125,458.2125,"12.5","156.7"],
+        ["UTAC41","UHF","Analog","Public Safety Conv","Mutual Aid / Interop","UHF Tactical Interop 1",453.4625,458.4625,"12.5","156.7"],
+        ["UTAC42","UHF","Analog","Public Safety Conv","Mutual Aid / Interop","UHF Tactical Interop 2",453.7125,458.7125,"12.5","156.7"],
+        ["UTAC43","UHF","Analog","Public Safety Conv","Mutual Aid / Interop","UHF Tactical Interop 3",453.8625,458.8625,"12.5","156.7"],
+        ["7CALL50D","700/800","P25","Public Safety Conv","Mutual Aid / Interop","700MHz National Calling Direct",769.24375,769.24375,"12.5","NAC 293"],
+        ["7TAC51D","700/800","P25","Public Safety Conv","Mutual Aid / Interop","700MHz General Tactical Direct",769.14375,769.14375,"12.5","NAC 293"],
+        ["7TAC52D","700/800","P25","Public Safety Conv","Mutual Aid / Interop","700MHz General Tactical 2 Direct",769.64375,769.64375,"12.5","NAC 293"],
+        ["7CALL70D","700/800","P25","Public Safety Conv","Mutual Aid / Interop","700MHz Secondary Calling Direct",773.25625,773.25625,"12.5","NAC 293"],
+        ["8CALL90","700/800","Analog","Public Safety Conv","Mutual Aid / Interop","800MHz National Calling Repeater",851.0125,806.0125,"25","156.7"],
+        ["8TAC91","700/800","Analog","Public Safety Conv","Mutual Aid / Interop","800MHz Tactical 1 Repeater",851.5125,806.5125,"25","156.7"],
+        ["8TAC92","700/800","Analog","Public Safety Conv","Mutual Aid / Interop","800MHz Tactical 2 Repeater",852.0125,807.0125,"25","156.7"],
+        ["8TAC93","700/800","Analog","Public Safety Conv","Mutual Aid / Interop","800MHz Tactical 3 Repeater",852.5125,807.5125,"25","156.7"],
+        ["8TAC94","700/800","Analog","Public Safety Conv","Mutual Aid / Interop","800MHz Tactical 4 Repeater",853.0125,808.0125,"25","156.7"]
+      ].map(([name, band, mode, service, agencyType, desc, rx, tx, bw, tone]) => ({
+        name, zone: "NIFOG Interop", band, mode, service, agencyType, desc, rx, tx, bw, tone, power: "RX", rxOnly: true
+      })),
 
       HamSimplex: [
-        { name: "2m CALL 146.52", zone: "Ham Simplex", band: "VHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "2m National FM Calling Frequency", rx: 146.5200, tx: 146.5200, bw: "25", tone: "None", power: "High", rxOnly: false },
-        { name: "2m SIMPLEX 55", zone: "Ham Simplex", band: "VHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "2m Secondary FM Simplex", rx: 146.5500, tx: 146.5500, bw: "25", tone: "None", power: "High", rxOnly: false },
-        { name: "2m SIMPLEX 58", zone: "Ham Simplex", band: "VHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "2m Tertiary FM Simplex", rx: 146.5800, tx: 146.5800, bw: "25", tone: "None", power: "High", rxOnly: false },
-        { name: "2m APRS 144.39", zone: "Ham Simplex", band: "VHF", mode: "Analog", service: "Amateur", agencyType: "APRS Data", desc: "North America APRS Packet Channel", rx: 144.3900, tx: 144.3900, bw: "25", tone: "None", power: "High", rxOnly: false },
-        { name: "2m DMR SIMP", zone: "Ham Simplex", band: "VHF", mode: "DMR", service: "Amateur", agencyType: "Amateur DMR", desc: "2m DMR National Simplex (CC1 TS1 TG99)", rx: 145.7900, tx: 145.7900, bw: "12.5", tone: "CC 1", power: "High", rxOnly: false },
-        { name: "1.25m CALL 223.5", zone: "Ham Simplex", band: "VHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "220 MHz National FM Calling", rx: 223.5000, tx: 223.5000, bw: "25", tone: "None", power: "High", rxOnly: false },
-        { name: "70cm CALL 446.0", zone: "Ham Simplex", band: "UHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "70cm National FM Calling Frequency", rx: 446.0000, tx: 446.0000, bw: "25", tone: "None", power: "High", rxOnly: false },
-        { name: "70cm SIMP 446.5", zone: "Ham Simplex", band: "UHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "70cm Secondary FM Simplex", rx: 446.5000, tx: 446.5000, bw: "25", tone: "None", power: "High", rxOnly: false },
-        { name: "70cm DMR SIMP", zone: "Ham Simplex", band: "UHF", mode: "DMR", service: "Amateur", agencyType: "Amateur DMR", desc: "70cm DMR National Simplex (CC1 TS1 TG99)", rx: 441.0000, tx: 441.0000, bw: "12.5", tone: "CC 1", power: "High", rxOnly: false },
-        { name: "70cm DMR 446.075", zone: "Ham Simplex", band: "UHF", mode: "DMR", service: "Amateur", agencyType: "Amateur DMR", desc: "70cm DMR Tactical Simplex (CC1 TS1 TG99)", rx: 446.0750, tx: 446.0750, bw: "12.5", tone: "CC 1", power: "High", rxOnly: false }
+        { name: "2m CALL 146.52", zone: "Ham Simplex", band: "VHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "2m National FM Calling Frequency", rx: 146.52, tx: 146.52, bw: "25", tone: "None", power: "High", rxOnly: false },
+        { name: "2m SIMPLEX 55", zone: "Ham Simplex", band: "VHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "2m Secondary FM Simplex", rx: 146.55, tx: 146.55, bw: "25", tone: "None", power: "High", rxOnly: false },
+        { name: "2m SIMPLEX 58", zone: "Ham Simplex", band: "VHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "2m Tertiary FM Simplex", rx: 146.58, tx: 146.58, bw: "25", tone: "None", power: "High", rxOnly: false },
+        { name: "2m APRS 144.39", zone: "Ham Simplex", band: "VHF", mode: "Analog", service: "Amateur", agencyType: "APRS Data", desc: "North America APRS Packet Channel", rx: 144.39, tx: 144.39, bw: "25", tone: "None", power: "High", rxOnly: false },
+        { name: "2m DMR SIMP", zone: "Ham Simplex", band: "VHF", mode: "DMR", service: "Amateur", agencyType: "Amateur DMR", desc: "2m DMR National Simplex (CC1 TS1 TG99)", rx: 145.79, tx: 145.79, bw: "12.5", tone: "CC 1", power: "High", rxOnly: false },
+        { name: "1.25m CALL 223.5", zone: "Ham Simplex", band: "VHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "220 MHz National FM Calling", rx: 223.5, tx: 223.5, bw: "25", tone: "None", power: "High", rxOnly: false },
+        { name: "70cm CALL 446.0", zone: "Ham Simplex", band: "UHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "70cm National FM Calling Frequency", rx: 446.0, tx: 446.0, bw: "25", tone: "None", power: "High", rxOnly: false },
+        { name: "70cm SIMP 446.5", zone: "Ham Simplex", band: "UHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "70cm Secondary FM Simplex", rx: 446.5, tx: 446.5, bw: "25", tone: "None", power: "High", rxOnly: false },
+        { name: "70cm DMR SIMP", zone: "Ham Simplex", band: "UHF", mode: "DMR", service: "Amateur", agencyType: "Amateur DMR", desc: "70cm DMR National Simplex (CC1 TS1 TG99)", rx: 441.0, tx: 441.0, bw: "12.5", tone: "CC 1", power: "High", rxOnly: false },
+        { name: "70cm DMR 446.075", zone: "Ham Simplex", band: "UHF", mode: "DMR", service: "Amateur", agencyType: "Amateur DMR", desc: "70cm DMR Tactical Simplex (CC1 TS1 TG99)", rx: 446.075, tx: 446.075, bw: "12.5", tone: "CC 1", power: "High", rxOnly: false }
       ]
     };
 
     // =========================================================================
-    // LEAFLET MAP INITIALIZATION
+    // LEAFLET MAP INITIALIZATION (FREE OPENSTREETMAP - ZERO API KEYS)
     // =========================================================================
     let map, markersLayer, radiusCircle, userMarker;
 
     function initMap() {
       map = L.map('miniMap').setView([state.lat, state.lon], 9);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap &copy; CARTO',
-        maxZoom: 19
-      }).addTo(map);
+
+      // Dark Mode Tile Layer (100% Free OpenStreetMap + CSS Dark Theme, Zero API Keys)
+      const darkLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        className: 'dark-tiles',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
+      });
+
+      // Standard Street Tile Layer (Clean light OSM)
+      const streetLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
+      });
+
+      darkLayer.addTo(map);
+
+      // Layer switcher control (Dark Mode vs Street Map)
+      L.control.layers({
+        "Dark Mode": darkLayer,
+        "Street Map": streetLayer
+      }, null, { position: 'topright' }).addTo(map);
+
       markersLayer = L.layerGroup().addTo(map);
       updateMapCenter(state.lat, state.lon);
     }
@@ -1136,8 +1175,8 @@
             service: 'Public Safety Conv',
             band,
             mode,
-            rx: c.rx,
-            tx: c.tx,
+            rx,
+            tx,
             detail: c.tone,
             encryption: c.enc === '1' || c.enc === '2' ? 'Encrypted (Verify)' : 'Clear',
             notes: `${c.descr} (${data.countyName})`,
@@ -1477,7 +1516,8 @@
 
     function modeBadgeClass(mode, service) {
       if (service === 'Trunked') return 'badge-trunk';
-      return { Analog: 'badge-analog', DMR: 'badge-dmr', P25: 'badge-p25', YSF: 'badge-ysf', 'D-STAR': 'badge-dstar', NXDN: 'badge-nxdn' }[mode] || 'badge-analog';
+      const mapCls = { Analog: 'badge-analog', DMR: 'badge-dmr', P25: 'badge-p25', YSF: 'badge-ysf', 'D-STAR': 'badge-dstar', NXDN: 'badge-nxdn' };
+      return mapCls[mode] || 'badge-analog';
     }
 
     function roleBadgeClass(roleKey, agencyType) {
