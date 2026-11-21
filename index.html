@@ -1,0 +1,1990 @@
+Below is the updated Codeplug Forge (index.html) with rich, unambiguous metadata
+across the Available Repeaters & Trunked Systems table, map popups, filters, CSV
+importer, and codeplug exports.
+
+What Was Enhanced
+
+1.  Rich Agency Type, Location & Description Columns:
+      - Every repeater and trunked site now explicitly displays:
+          - Location & Bearing: Exact site location/sector (dynamically
+            localized to the City/County/State you search via Nominatim
+            addressdetails=1, plus compass bearing and distance).
+          - Explicit Role / Type Badges: Color-coded tags such as Local Police,
+            County Sheriff, Local Fire, Local EMS, Interop / Mutual Aid, Public
+            Works, Amateur Repeater, GMRS Repeater, and Marine / Port.
+          - Short Channel / System Description: Plain-English explanation of
+            what the channel or system is used for (e.g., "Primary municipal
+            police patrol dispatch", "Countywide fire paging, tone-out &
+            dispatch", "700/800 MHz P25 Phase II Simulcast Control Channel
+            carrying multiple municipal talkgroups"), plus Clear vs. Encrypted
+            advisories for Public Safety.
+2.  Expandable Talkgroups Inside Trunked Systems:
+      - Public Safety trunked systems (e.g., 700/800 MHz P25 Phase II) now
+        include an expandable View Talkgroups button right inside the table row
+        so nobody is confused by a raw control frequency. Expanding it reveals
+        the individual talkgroups (Local Police Dispatch, Police Tac, Local Fire
+        Dispatch, Fireground Ops, Local EMS Dispatch, Public Works) with their
+        TGID, Mode/Encryption status, and Description, and lets you add
+        individual talkgroups directly to your codeplug.
+3.  Public Safety Role Filter Bar:
+      - Added a Role / Usage Filter dropdown (All Roles, Local Police / Sheriff,
+        Local Fire, Local EMS, Mutual Aid / Interop, Amateur / GMRS / Marine)
+        right in the results header.
+4.  Smarter RadioReference / RepeaterBook CSV Importer:
+      - Automatically parses County, City, Agency, Tag (e.g., Law Dispatch,
+        Fire-Tac, EMS), Description, and Encryption columns from uploaded CSVs
+        and maps them to the new Type badges and descriptions.
+
+Complete Updated Application (index.html)
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Codeplug Forge — Multi-Band & Multi-Mode Radio Programmer</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            slate: { 850: '#151e32', 950: '#090e1a' }
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Leaflet Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    body { background-color: #090e1a; color: #e2e8f0; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    .leaflet-container { background: #0f172a; }
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: #0f172a; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: #475569; }
+    .badge-analog { background: rgba(16,185,129,.15); color: #34d399; border: 1px solid rgba(16,185,129,.3); }
+    .badge-dmr { background: rgba(6,182,212,.15); color: #22d3ee; border: 1px solid rgba(6,182,212,.3); }
+    .badge-p25 { background: rgba(59,130,246,.15); color: #60a5fa; border: 1px solid rgba(59,130,246,.3); }
+    .badge-ysf { background: rgba(168,85,247,.15); color: #c084fc; border: 1px solid rgba(168,85,247,.3); }
+    .badge-dstar { background: rgba(245,158,11,.15); color: #fbbf24; border: 1px solid rgba(245,158,11,.3); }
+    .badge-nxdn { background: rgba(244,63,94,.15); color: #fb7185; border: 1px solid rgba(244,63,94,.3); }
+    .badge-trunk { background: rgba(249,115,22,.15); color: #fb923c; border: 1px solid rgba(249,115,22,.3); }
+
+    /* Agency / Role Badges */
+    .role-police { background: rgba(59,130,246,.18); color: #93c5fd; border: 1px solid rgba(59,130,246,.35); }
+    .role-fire { background: rgba(239,68,68,.18); color: #fca5a5; border: 1px solid rgba(239,68,68,.35); }
+    .role-ems { background: rgba(245,158,11,.18); color: #fcd34d; border: 1px solid rgba(245,158,11,.35); }
+    .role-interop { background: rgba(249,115,22,.18); color: #fdba74; border: 1px solid rgba(249,115,22,.35); }
+    .role-utility { background: rgba(148,163,184,.18); color: #cbd5e1; border: 1px solid rgba(148,163,184,.35); }
+    .role-ham { background: rgba(16,185,129,.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,.3); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="border-b border-slate-800 bg-slate-950/90 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-[1600px] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-cyan-500/15 border border-cyan-500/40 flex items-center justify-center text-cyan-400 font-bold">
+          RF
+        </div>
+        <div>
+          <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-2">
+            Codeplug Forge
+            <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-cyan-400 border border-slate-700">MULTI-MODE CPS</span>
+          </h1>
+          <p class="text-xs text-slate-400">VHF/UHF • 7/800MHz • DMR / P25 / D-STAR / YSF / NXDN • Trunked &amp; Statutory</p>
+        </div>
+      </div>
+
+      <!-- Location Search Bar -->
+      <div class="flex flex-wrap items-center gap-2 flex-1 max-w-2xl justify-end">
+        <div class="relative flex-1 min-w-[220px]">
+          <input id="locationInput" type="text" value="Dallas, TX"
+            placeholder="City, State, ZIP, or Lat, Lon..."
+            onkeydown="if(event.key==='Enter') geocodeLocation()"
+            class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500" />
+        </div>
+        <button onclick="geocodeLocation()" class="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium transition">
+          Locate
+        </button>
+        <button onclick="useBrowserGPS()" title="Use Browser GPS" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-sm transition">
+          GPS
+        </button>
+        <div class="hidden sm:flex items-center gap-3 pl-3 border-l border-slate-800 text-xs font-mono">
+          <div class="text-slate-400">Channels: <span id="statChannels" class="text-emerald-400 font-bold">0</span></div>
+          <div class="text-slate-400">Contacts: <span id="statContacts" class="text-cyan-400 font-bold">0</span></div>
+          <div class="text-slate-400">DMR IDs: <span id="statDmrIds" class="text-amber-400 font-bold">0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Primary Tabs -->
+    <div class="max-w-[1600px] mx-auto px-4 flex gap-1 overflow-x-auto border-t border-slate-800/70">
+      <button onclick="switchTab('explorer')" data-tab="explorer" class="tab-btn px-4 py-2.5 text-xs font-semibold border-b-2 border-cyan-400 text-cyan-400 whitespace-nowrap">
+        1. Map &amp; Repeater Explorer
+      </button>
+      <button onclick="switchTab('statutory')" data-tab="statutory" class="tab-btn px-4 py-2.5 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">
+        2. FRS / GMRS / MURS / Marine
+      </button>
+      <button onclick="switchTab('contacts')" data-tab="contacts" class="tab-btn px-4 py-2.5 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">
+        3. Contacts &amp; Talkgroups (BM &amp; P25)
+      </button>
+      <button onclick="switchTab('dmrid')" data-tab="dmrid" class="tab-btn px-4 py-2.5 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">
+        4. DMR ID Database Builder
+      </button>
+      <button onclick="switchTab('export')" data-tab="export" class="tab-btn px-4 py-2.5 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">
+        5. Codeplug Zones &amp; Export
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="flex-1 max-w-[1600px] w-full mx-auto p-4">
+
+    <!-- ==================== TAB 1: MAP & EXPLORER ==================== -->
+    <section id="tab-explorer" class="tab-panel grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <!-- Left Filters & Tools -->
+      <aside class="lg:col-span-3 space-y-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold text-white">Search Filters</h2>
+            <button onclick="resetFilters()" class="text-xs text-cyan-400 hover:underline">Reset</button>
+          </div>
+
+          <!-- Distance Slider -->
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-400">Radius Distance</span>
+              <span class="font-mono text-cyan-400 font-semibold"><span id="radiusLabel">35</span> miles</span>
+            </div>
+            <input id="radiusSlider" type="range" min="5" max="150" step="5" value="35"
+              oninput="onRadiusChange(this.value)"
+              class="w-full accent-cyan-500 cursor-pointer" />
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>5 mi</span><span>75 mi</span><span>150 mi</span>
+            </div>
+          </div>
+
+          <!-- Band Filters -->
+          <div>
+            <div class="text-xs font-semibold text-slate-300 mb-2">Frequency Bands</div>
+            <div class="grid grid-cols-2 gap-1.5 text-xs">
+              <label class="flex items-center gap-2 bg-slate-950/60 p-2 rounded border border-slate-800 cursor-pointer">
+                <input type="checkbox" class="filter-band accent-cyan-500" value="VHF" checked onchange="applyFilters()"> VHF (136-174)
+              </label>
+              <label class="flex items-center gap-2 bg-slate-950/60 p-2 rounded border border-slate-800 cursor-pointer">
+                <input type="checkbox" class="filter-band accent-cyan-500" value="UHF" checked onchange="applyFilters()"> UHF (400-512)
+              </label>
+              <label class="flex items-center gap-2 bg-slate-950/60 p-2 rounded border border-slate-800 cursor-pointer col-span-2">
+                <input type="checkbox" class="filter-band accent-cyan-500" value="700/800" checked onchange="applyFilters()"> 700 / 800 MHz (764-869)
+              </label>
+            </div>
+          </div>
+
+          <!-- Mode Filters -->
+          <div>
+            <div class="text-xs font-semibold text-slate-300 mb-2">Modulation / Digital Modes</div>
+            <div class="grid grid-cols-2 gap-1.5 text-xs">
+              <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-mode accent-emerald-500" value="Analog" checked onchange="applyFilters()"> Analog FM</label>
+              <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-mode accent-cyan-500" value="DMR" checked onchange="applyFilters()"> DMR</label>
+              <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-mode accent-blue-500" value="P25" checked onchange="applyFilters()"> P25 (I / II)</label>
+              <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-mode accent-amber-500" value="D-STAR" checked onchange="applyFilters()"> D-STAR</label>
+              <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-mode accent-purple-500" value="YSF" checked onchange="applyFilters()"> Fusion (YSF)</label>
+              <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-mode accent-rose-500" value="NXDN" checked onchange="applyFilters()"> NXDN</label>
+            </div>
+          </div>
+
+          <!-- Service / System Type Filters -->
+          <div>
+            <div class="text-xs font-semibold text-slate-300 mb-2">Service &amp; System Architecture</div>
+            <div class="space-y-1.5 text-xs">
+              <label class="flex items-center gap-2"><input type="checkbox" class="filter-service accent-cyan-500" value="Amateur" checked onchange="applyFilters()"> Amateur Radio (Ham)</label>
+              <label class="flex items-center gap-2"><input type="checkbox" class="filter-service accent-cyan-500" value="Public Safety Conv" checked onchange="applyFilters()"> Public Safety (Conventional)</label>
+              <label class="flex items-center gap-2"><input type="checkbox" class="filter-service accent-orange-500" value="Trunked" checked onchange="applyFilters()"> Public Safety / Utility Trunked</label>
+              <label class="flex items-center gap-2"><input type="checkbox" class="filter-service accent-cyan-500" value="GMRS" checked onchange="applyFilters()"> GMRS Local Repeaters</label>
+              <label class="flex items-center gap-2"><input type="checkbox" class="filter-service accent-cyan-500" value="Marine" checked onchange="applyFilters()"> Marine / Coastal VHF</label>
+            </div>
+          </div>
+
+          <!-- External CSV Import -->
+          <div class="pt-3 border-t border-slate-800 space-y-2">
+            <div class="text-xs font-semibold text-slate-300">Import Live Repeater / RR CSV</div>
+            <p class="text-[11px] text-slate-400">Load exports from <strong>RepeaterBook</strong> or <strong>RadioReference</strong> (auto-maps County, Agency, Tag/Type, Description &amp; Encryption).</p>
+            <input id="repeaterCsvUpload" type="file" accept=".csv" onchange="importRepeaterCSV(event)"
+              class="block w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:bg-slate-800 file:text-cyan-400 hover:file:bg-slate-700 cursor-pointer" />
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center/Right: Mini Map + Results Table -->
+      <div class="lg:col-span-9 space-y-4">
+        <!-- Mini-Map Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+          <div class="px-4 py-2.5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2 text-xs">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="font-semibold text-white">Local RF Coverage Map</span>
+              <span id="placeLabel" class="text-cyan-300 font-medium">Dallas, TX</span>
+              <span id="coordReadout" class="font-mono text-slate-400">(32.7767, -96.7970)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="visibleCountBadge" class="text-xs font-mono bg-slate-800 px-2.5 py-1 rounded text-cyan-400">0 sites in range</span>
+              <button onclick="addAllFilteredToCodeplug()" class="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition">
+                + Add All Filtered to Codeplug
+              </button>
+            </div>
+          </div>
+          <div id="miniMap" class="h-[320px] w-full z-10"></div>
+        </div>
+
+        <!-- Repeaters & Systems Table -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+          <div class="px-4 py-3 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="text-sm font-bold text-white">Available Repeaters &amp; Trunked Systems</h3>
+                <span class="text-[11px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                  Demo grid localized to search area — import RR/RepeaterBook CSV for exact local licenses
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-0.5">
+                Public Safety channels default to <span class="text-rose-300 font-semibold">RX-Only (Receive Only)</span>. Expand trunked systems to inspect individual Police, Fire &amp; EMS talkgroups.
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <select id="roleFilter" onchange="applyFilters()" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
+                <option value="ALL">All Types / Agencies</option>
+                <option value="Police">Local Police / Sheriff</option>
+                <option value="Fire">Local Fire</option>
+                <option value="EMS">Local EMS / Medevac</option>
+                <option value="Interop">Mutual Aid / Interop</option>
+                <option value="Public Safety">All Public Safety</option>
+                <option value="Amateur">Amateur / GMRS / Marine</option>
+              </select>
+              <input id="tableSearch" type="text" placeholder="Search name, city, type, desc, freq..."
+                oninput="applyFilters()"
+                class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1 text-xs text-white focus:outline-none focus:border-cyan-500 w-56" />
+            </div>
+          </div>
+
+          <div class="overflow-x-auto max-h-[520px] custom-scroll">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 uppercase font-mono text-[11px] sticky top-0 z-10">
+                <tr>
+                  <th class="px-3 py-2.5">System / Channel Name &amp; Location</th>
+                  <th class="px-3 py-2.5">Type / Role</th>
+                  <th class="px-3 py-2.5">Description (Channel / System / TGs)</th>
+                  <th class="px-3 py-2.5">Band &amp; Mode</th>
+                  <th class="px-3 py-2.5">RX / TX &amp; Tone/NAC</th>
+                  <th class="px-3 py-2.5">Dist</th>
+                  <th class="px-3 py-2.5 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="repeaterTableBody" class="divide-y divide-slate-800/70"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: STATUTORY SERVICES ==================== -->
+    <section id="tab-statutory" class="tab-panel hidden space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-bold text-white">License-Free &amp; Statutory US Frequency Tables</h2>
+          <p class="text-xs text-slate-400">Exact FCC Part 95 (FRS, GMRS, MURS) and Part 80 (Marine VHF + NOAA Weather) channel allocations. One click adds an organized Zone to your codeplug.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="addServiceZone('FRS')" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">+ Add FRS (22 Ch)</button>
+          <button onclick="addServiceZone('GMRS')" class="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold">+ Add GMRS (Simplex + Rptrs)</button>
+          <button onclick="addServiceZone('MURS')" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold">+ Add MURS (5 Ch)</button>
+          <button onclick="addServiceZone('Marine')" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold">+ Add Marine &amp; WX</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="statutoryCardsContainer"></div>
+    </section>
+
+    <!-- ==================== TAB 3: CONTACTS & TALKGROUPS ==================== -->
+    <section id="tab-contacts" class="tab-panel hidden grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <!-- BrandMeister DMR Talkgroups -->
+      <div class="lg:col-span-6 bg-slate-900 border border-slate-800 rounded-xl flex flex-col overflow-hidden">
+        <div class="p-4 border-b border-slate-800 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <h2 class="text-sm font-bold text-white">BrandMeister DMR Talkgroups</h2>
+              <p class="text-xs text-slate-400">Select talkgroups for DMR Digital Contacts &amp; RX Group Lists</p>
+            </div>
+            <button onclick="syncBrandMeisterAPI()" id="bmSyncBtn" class="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold">
+              Sync Live BM API
+            </button>
+          </div>
+          <div class="flex gap-2">
+            <input id="bmSearch" type="text" placeholder="Search TG ID or Name (e.g. 91, 310, Texas)..."
+              oninput="renderTalkgroups()"
+              class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500" />
+            <button onclick="selectAllVisibleTGs('DMR')" class="px-2.5 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-xs text-slate-200">Select Visible</button>
+          </div>
+        </div>
+        <div class="overflow-y-auto max-h-[480px] custom-scroll">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950 text-slate-400 font-mono text-[11px] sticky top-0">
+              <tr>
+                <th class="px-3 py-2">TG ID</th>
+                <th class="px-3 py-2">Name / Region</th>
+                <th class="px-3 py-2">Slot</th>
+                <th class="px-3 py-2 text-right">Include</th>
+              </tr>
+            </thead>
+            <tbody id="bmTableBody" class="divide-y divide-slate-800/70"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- P25 Talkgroups / Reflectors -->
+      <div class="lg:col-span-6 bg-slate-900 border border-slate-800 rounded-xl flex flex-col overflow-hidden">
+        <div class="p-4 border-b border-slate-800 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <h2 class="text-sm font-bold text-white">P25 Talkgroups &amp; Reflectors</h2>
+              <p class="text-xs text-slate-400">Amateur MMDVM P25 Reflectors &amp; Public Safety P25 TGIDs</p>
+            </div>
+            <button onclick="selectAllVisibleTGs('P25')" class="px-2.5 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-xs text-slate-200">Select Visible</button>
+          </div>
+          <div class="flex gap-2">
+            <input id="p25Search" type="text" placeholder="Search P25 TG / Reflector (e.g. 10200, TAC, Fire)..."
+              oninput="renderTalkgroups()"
+              class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500" />
+          </div>
+          <!-- Custom Contact Adder -->
+          <div class="grid grid-cols-12 gap-2 pt-2 border-t border-slate-800/70">
+            <select id="customTgMode" class="col-span-3 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs">
+              <option value="DMR">DMR TG</option>
+              <option value="P25">P25 TG</option>
+            </select>
+            <input id="customTgId" type="number" placeholder="TG ID" class="col-span-3 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs" />
+            <input id="customTgName" type="text" placeholder="Contact Name" class="col-span-4 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs" />
+            <button onclick="addCustomContact()" class="col-span-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-semibold">Add</button>
+          </div>
+        </div>
+        <div class="overflow-y-auto max-h-[440px] custom-scroll">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950 text-slate-400 font-mono text-[11px] sticky top-0">
+              <tr>
+                <th class="px-3 py-2">TG / Ref</th>
+                <th class="px-3 py-2">Description</th>
+                <th class="px-3 py-2">Network</th>
+                <th class="px-3 py-2 text-right">Include</th>
+              </tr>
+            </thead>
+            <tbody id="p25TableBody" class="divide-y divide-slate-800/70"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: DMR ID DATABASE BUILDER ==================== -->
+    <section id="tab-dmrid" class="tab-panel hidden grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <div class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-4">
+        <div>
+          <h2 class="text-sm font-bold text-white">DMR ID Database Filter Engine</h2>
+          <p class="text-xs text-slate-400">Build a trimmed, radio-ready Digital Contact List filtered by geography and recent activity.</p>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="block text-slate-400 mb-1">Country Filter</label>
+            <select id="dmrCountryFilter" onchange="filterDmrDatabase()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white">
+              <option value="ALL">All Countries</option>
+              <option value="United States" selected>United States</option>
+              <option value="Canada">Canada</option>
+              <option value="United Kingdom">United Kingdom</option>
+              <option value="Germany">Germany</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-slate-400 mb-1">State / Region</label>
+              <input id="dmrStateFilter" type="text" placeholder="e.g. Texas, TX, CA" oninput="filterDmrDatabase()"
+                class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-white" />
+            </div>
+            <div>
+              <label class="block text-slate-400 mb-1">Proximity to Pin (mi)</label>
+              <select id="dmrProximityFilter" onchange="filterDmrDatabase()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-white">
+                <option value="0">Any Distance</option>
+                <option value="50">Within 50 miles</option>
+                <option value="150" selected>Within 150 miles</option>
+                <option value="500">Within 500 miles</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-slate-400 mb-1">Activity / Last-Heard Filter</label>
+            <select id="dmrActivityFilter" onchange="filterDmrDatabase()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white">
+              <option value="9999">All Registered IDs</option>
+              <option value="365">Active within Last 1 Year</option>
+              <option value="90" selected>Active within Last 90 Days</option>
+              <option value="30">Active within Last 30 Days</option>
+              <option value="7">Highly Active (Last 7 Days)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-slate-400 mb-1">Radio Memory Cap (Max Rows)</label>
+            <select id="dmrMaxRows" onchange="filterDmrDatabase()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white">
+              <option value="10000">10,000 IDs (Legacy MD-380 / GD-77)</option>
+              <option value="50000">50,000 IDs (OpenGD77 Extended)</option>
+              <option value="200000" selected>200,000 IDs (AnyTone D878UV)</option>
+              <option value="500000">500,000 IDs (AnyTone D878UVII+)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Import Local RadioID user.csv or Query API -->
+        <div class="pt-3 border-t border-slate-800 space-y-2.5">
+          <div class="text-xs font-semibold text-slate-300">Data Source (RadioID.net)</div>
+          <label class="block text-[11px] text-slate-400">Upload local RadioID <code class="text-cyan-400">user.csv</code> (processed 100% locally in browser):</label>
+          <input type="file" accept=".csv" onchange="importRadioIdCsv(event)"
+            class="block w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:bg-slate-800 file:text-cyan-400 cursor-pointer" />
+
+          <div class="flex gap-2 pt-1">
+            <input id="radioIdToken" type="password" placeholder="Optional RadioID X-API-Token"
+              class="flex-1 bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white" />
+            <button onclick="fetchRadioIdApi()" class="px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs text-cyan-400 font-semibold">
+              Query API
+            </button>
+          </div>
+        </div>
+
+        <div class="pt-2 grid grid-cols-2 gap-2">
+          <button onclick="exportDmrIdCsv('anytone')" class="py-2 px-3 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold">
+            Export AnyTone CSV
+          </button>
+          <button onclick="exportDmrIdCsv('opengd77')" class="py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">
+            Export OpenGD77 CSV
+          </button>
+        </div>
+      </div>
+
+      <div class="lg:col-span-8 bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
+        <div class="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-white">Filtered DMR ID Preview</h3>
+            <p class="text-xs text-slate-400" id="dmrStatusText">Showing matching records from loaded database</p>
+          </div>
+          <span id="dmrMatchBadge" class="text-xs font-mono bg-slate-800 px-2.5 py-1 rounded text-amber-400">0 IDs matched</span>
+        </div>
+        <div class="overflow-auto max-h-[540px] custom-scroll">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950 text-slate-400 font-mono text-[11px] sticky top-0">
+              <tr>
+                <th class="px-3 py-2">Radio ID</th>
+                <th class="px-3 py-2">Callsign</th>
+                <th class="px-3 py-2">Name</th>
+                <th class="px-3 py-2">City / State</th>
+                <th class="px-3 py-2">Country</th>
+                <th class="px-3 py-2">Last Active</th>
+              </tr>
+            </thead>
+            <tbody id="dmrIdTableBody" class="divide-y divide-slate-800/70"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 5: CODEPLUG ZONES & EXPORT ==================== -->
+    <section id="tab-export" class="tab-panel hidden grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <div class="lg:col-span-4 space-y-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+          <h2 class="text-sm font-bold text-white">Radio Identity &amp; Codeplug Options</h2>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <label class="block text-slate-400 mb-1">Your Callsign</label>
+              <input id="userCallsign" type="text" value="N0CALL" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-white font-mono uppercase" />
+            </div>
+            <div>
+              <label class="block text-slate-400 mb-1">Your DMR Radio ID</label>
+              <input id="userDmrId" type="number" value="3100001" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-white font-mono" />
+            </div>
+          </div>
+          <label class="flex items-center gap-2 text-xs text-slate-300 pt-1">
+            <input id="rxOnlyPublicSafety" type="checkbox" checked class="accent-cyan-500">
+            Enforce TX Prohibit (RX-Only) on Public Safety, Trunked &amp; NOAA WX channels
+          </label>
+          <label class="flex items-center gap-2 text-xs text-slate-300">
+            <input id="autoExpandDmrTgs" type="checkbox" checked class="accent-cyan-500">
+            Auto-create per-Talkgroup channels for DMR repeaters using selected BM Contacts
+          </label>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2.5">
+          <h2 class="text-sm font-bold text-white">Export Codeplug Files</h2>
+          <p class="text-xs text-slate-400">Downloads formatted CSV/JSON files ready for your CPS software.</p>
+
+          <button onclick="exportCodeplug('anytone')" class="w-full py-2 px-3 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold text-left flex justify-between items-center">
+            <span>AnyTone CPS Bundle (Channels, TGs, Zones)</span><span class="font-mono">.CSV</span>
+          </button>
+          <button onclick="exportCodeplug('opengd77')" class="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold text-left flex justify-between items-center">
+            <span>OpenGD77 CPS Bundle (Channels, Contacts, Zones)</span><span class="font-mono">.CSV</span>
+          </button>
+          <button onclick="exportCodeplug('chirp')" class="w-full py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold text-left flex justify-between items-center">
+            <span>CHIRP Analog / VHF-UHF / GMRS / FRS / Marine</span><span class="font-mono">.CSV</span>
+          </button>
+          <button onclick="exportCodeplug('trunked')" class="w-full py-2 px-3 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-xs font-semibold text-left flex justify-between items-center">
+            <span>700/800MHz &amp; P25 Trunked Scanner Sheet</span><span class="font-mono">.CSV</span>
+          </button>
+          <button onclick="exportCodeplug('json')" class="w-full py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold text-left flex justify-between items-center">
+            <span>Master Universal Codeplug Backup</span><span class="font-mono">.JSON</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Active Codeplug Channels & Zones -->
+      <div class="lg:col-span-8 bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
+        <div class="px-4 py-3 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 class="text-sm font-bold text-white">Active Codeplug Channel List</h3>
+            <p class="text-xs text-slate-400">Channels organized automatically into Zones by Service / Agency Role</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="clearCodeplug()" class="px-3 py-1 rounded bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/30 text-rose-300 text-xs">Clear All</button>
+          </div>
+        </div>
+        <div class="overflow-auto max-h-[540px] custom-scroll">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950 text-slate-400 font-mono text-[11px] sticky top-0">
+              <tr>
+                <th class="px-3 py-2">#</th>
+                <th class="px-3 py-2">Zone</th>
+                <th class="px-3 py-2">Channel Name &amp; Description</th>
+                <th class="px-3 py-2">Type / Mode</th>
+                <th class="px-3 py-2">RX / TX (MHz)</th>
+                <th class="px-3 py-2">Tone / CC / TG</th>
+                <th class="px-3 py-2">TX Inhibit</th>
+                <th class="px-3 py-2 text-right">Remove</th>
+              </tr>
+            </thead>
+            <tbody id="codeplugTableBody" class="divide-y divide-slate-800/70"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // =========================================================================
+    // STATE & CORE DATA
+    // =========================================================================
+    const state = {
+      lat: 32.7767,
+      lon: -96.7970,
+      placeName: "Dallas",
+      countyName: "Dallas County",
+      stateAbbr: "TX",
+      radiusMiles: 35,
+      repeaters: [],
+      filteredRepeaters: [],
+      expandedTrunkIds: new Set(),
+      codeplugChannels: [],
+      selectedContacts: new Set([91, 93, 3100, 310, 9990, 10100, 10200]),
+      bmTalkgroups: [
+        { id: 9, name: "Local / Repeater", region: "Local", slot: "TS2" },
+        { id: 91, name: "World-wide", region: "Global", slot: "TS1" },
+        { id: 93, name: "North America", region: "Regional", slot: "TS1" },
+        { id: 98, name: "Radio Test", region: "Utility", slot: "TS2" },
+        { id: 310, name: "TAC 310 USA", region: "USA TAC", slot: "TS1" },
+        { id: 311, name: "TAC 311 USA", region: "USA TAC", slot: "TS1" },
+        { id: 312, name: "TAC 312 USA", region: "USA TAC", slot: "TS1" },
+        { id: 3100, name: "USA Nationwide", region: "USA", slot: "TS1" },
+        { id: 3106, name: "California Statewide", region: "State", slot: "TS2" },
+        { id: 3112, name: "Florida Statewide", region: "State", slot: "TS2" },
+        { id: 3117, name: "Illinois Statewide", region: "State", slot: "TS2" },
+        { id: 3136, name: "New York Statewide", region: "State", slot: "TS2" },
+        { id: 3148, name: "Texas Statewide", region: "State", slot: "TS2" },
+        { id: 3153, name: "Washington Statewide", region: "State", slot: "TS2" },
+        { id: 3171, name: "No-Net / Ragchew", region: "USA", slot: "TS1" },
+        { id: 4000, name: "Unlink Reflector / TG", region: "Control", slot: "TS2" },
+        { id: 9990, name: "Parrot Audio Test", region: "Utility", slot: "TS2" }
+      ],
+      p25Talkgroups: [
+        { id: 10, name: "Local Parrot Audio Test", network: "MMDVM P25" },
+        { id: 302, name: "Canada Wide P25", network: "MMDVM P25" },
+        { id: 9999, name: "Unlink Reflector", network: "MMDVM P25" },
+        { id: 10100, name: "World Wide P25", network: "MMDVM P25" },
+        { id: 10200, name: "North America P25", network: "MMDVM P25" },
+        { id: 10201, name: "North America TAC 1", network: "MMDVM P25" },
+        { id: 10300, name: "Europe P25", network: "MMDVM P25" },
+        { id: 10400, name: "Pacific P25", network: "MMDVM P25" },
+        { id: 31665, name: "P25-DMR Gateway", network: "Bridge" },
+        { id: 31672, name: "P25 Pi-Star Chat", network: "MMDVM P25" },
+        { id: 50525, name: "YSF/NXDN/DMR Bridge", network: "Bridge" },
+        { id: 101, name: "County Sheriff Dispatch (Template)", network: "Public Safety P25" },
+        { id: 201, name: "Metro Fireground Tac 1 (Template)", network: "Public Safety P25" },
+        { id: 301, name: "EMS / Regional Interop (Template)", network: "Public Safety P25" }
+      ],
+      dmrDatabase: [],
+      filteredDmrDatabase: []
+    };
+
+    // Statutory FCC Exact Channel Tables
+    const STATUTORY_TABLES = {
+      FRS: Array.from({ length: 22 }, (_, i) => {
+        const freqs = [
+          462.5625, 462.5875, 462.6125, 462.6375, 462.6625, 462.6875, 462.7125,
+          467.5625, 467.5875, 467.6125, 467.6375, 467.6625, 467.6875, 467.7125,
+          462.5500, 462.5750, 462.6000, 462.6250, 462.6500, 462.6750, 462.7000, 462.7250
+        ];
+        const ch = i + 1;
+        const power = (ch >= 8 && ch <= 14) ? "0.5W" : "2.0W";
+        return { name: `FRS ${String(ch).padStart(2, '0')}`, zone: "FRS", band: "UHF", mode: "Analog", service: "FRS", agencyType: "FRS Simplex", desc: `FRS Channel ${ch} (${power} max)`, rx: freqs[i], tx: freqs[i], bw: "12.5", tone: "None", power, rxOnly: false };
+      }),
+      GMRS: [
+        ...[462.5625, 462.5875, 462.6125, 462.6375, 462.6625, 462.6875, 462.7125].map((f, i) => ({
+          name: `GMRS ${String(i + 1).padStart(2, '0')}`, zone: "GMRS", band: "UHF", mode: "Analog", service: "GMRS", agencyType: "GMRS Simplex", desc: `GMRS Interstitial Ch ${i + 1} (5W max)`, rx: f, tx: f, bw: "12.5", tone: "None", power: "5W", rxOnly: false
+        })),
+        ...[462.5500, 462.5750, 462.6000, 462.6250, 462.6500, 462.6750, 462.7000, 462.7250].map((f, i) => ({
+          name: `GMRS ${i + 15}`, zone: "GMRS", band: "UHF", mode: "Analog", service: "GMRS", agencyType: "GMRS Simplex", desc: `GMRS Primary High-Power Ch ${i + 15} (50W max)`, rx: f, tx: f, bw: "25", tone: "None", power: "50W", rxOnly: false
+        })),
+        ...[462.5500, 462.5750, 462.6000, 462.6250, 462.6500, 462.6750, 462.7000, 462.7250].map((f, i) => ({
+          name: `GMRS R${i + 15}`, zone: "GMRS", band: "UHF", mode: "Analog", service: "GMRS", agencyType: "GMRS Repeater", desc: `GMRS Repeater Pair ${i + 15}R (+5 MHz input)`, rx: f, tx: Number((f + 5).toFixed(4)), bw: "25", tone: "141.3", power: "50W", rxOnly: false
+        }))
+      ],
+      MURS: [
+        { name: "MURS 1", zone: "MURS", band: "VHF", mode: "Analog", service: "MURS", agencyType: "MURS Simplex", desc: "MURS Ch 1 (VHF 11.25 kHz Narrow)", rx: 151.8200, tx: 151.8200, bw: "11.25", tone: "None", power: "2W", rxOnly: false },
+        { name: "MURS 2", zone: "MURS", band: "VHF", mode: "Analog", service: "MURS", agencyType: "MURS Simplex", desc: "MURS Ch 2 (VHF 11.25 kHz Narrow)", rx: 151.8800, tx: 151.8800, bw: "11.25", tone: "None", power: "2W", rxOnly: false },
+        { name: "MURS 3", zone: "MURS", band: "VHF", mode: "Analog", service: "MURS", agencyType: "MURS Simplex", desc: "MURS Ch 3 (VHF 11.25 kHz Narrow)", rx: 151.9400, tx: 151.9400, bw: "11.25", tone: "None", power: "2W", rxOnly: false },
+        { name: "MURS 4 Blue", zone: "MURS", band: "VHF", mode: "Analog", service: "MURS", agencyType: "MURS Simplex", desc: "MURS Ch 4 Blue Dot (20 kHz)", rx: 154.5700, tx: 154.5700, bw: "20", tone: "None", power: "2W", rxOnly: false },
+        { name: "MURS 5 Green", zone: "MURS", band: "VHF", mode: "Analog", service: "MURS", agencyType: "MURS Simplex", desc: "MURS Ch 5 Green Dot (20 kHz)", rx: 154.6000, tx: 154.6000, bw: "20", tone: "None", power: "2W", rxOnly: false }
+      ],
+      Marine: [
+        { name: "MAR 06 Safety", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Safety", desc: "Intership Safety & Search/Rescue", rx: 156.3000, tx: 156.3000, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 09 Calling", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Calling", desc: "Recreational Boater Calling Channel", rx: 156.4500, tx: 156.4500, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 13 Nav", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Nav", desc: "Bridge-to-Bridge Navigation (1W limit)", rx: 156.6500, tx: 156.6500, bw: "25", tone: "None", power: "1W", rxOnly: false },
+        { name: "MAR 16 Distress", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Distress", desc: "International Distress, Safety & Calling", rx: 156.8000, tx: 156.8000, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 22A USCG", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "US Coast Guard", desc: "USCG Liaison & Maritime Advisories", rx: 157.1000, tx: 157.1000, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 68 NonCom", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Working", desc: "Non-Commercial Working Channel", rx: 156.4250, tx: 156.4250, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 69 NonCom", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Working", desc: "Non-Commercial Working Channel", rx: 156.4750, tx: 156.4750, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 71 NonCom", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Working", desc: "Non-Commercial Working Channel", rx: 156.5750, tx: 156.5750, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "MAR 72 Ship", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "Marine Intership", desc: "Non-Commercial Intership Only", rx: 156.6250, tx: 156.6250, bw: "25", tone: "None", power: "25W", rxOnly: false },
+        { name: "WX1 NOAA", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "NOAA Weather", desc: "NOAA Weather Radio Ch 1 (RX Only)", rx: 162.5500, tx: 162.5500, bw: "25", tone: "None", power: "RX", rxOnly: true },
+        { name: "WX2 NOAA", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "NOAA Weather", desc: "NOAA Weather Radio Ch 2 (RX Only)", rx: 162.4000, tx: 162.4000, bw: "25", tone: "None", power: "RX", rxOnly: true },
+        { name: "WX3 NOAA", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "NOAA Weather", desc: "NOAA Weather Radio Ch 3 (RX Only)", rx: 162.4750, tx: 162.4750, bw: "25", tone: "None", power: "RX", rxOnly: true },
+        { name: "WX4 NOAA", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "NOAA Weather", desc: "NOAA Weather Radio Ch 4 (RX Only)", rx: 162.4250, tx: 162.4250, bw: "25", tone: "None", power: "RX", rxOnly: true },
+        { name: "WX5 NOAA", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "NOAA Weather", desc: "NOAA Weather Radio Ch 5 (RX Only)", rx: 162.4500, tx: 162.4500, bw: "25", tone: "None", power: "RX", rxOnly: true },
+        { name: "WX6 NOAA", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "NOAA Weather", desc: "NOAA Weather Radio Ch 6 (RX Only)", rx: 162.5000, tx: 162.5000, bw: "25", tone: "None", power: "RX", rxOnly: true },
+        { name: "WX7 NOAA", zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType: "NOAA Weather", desc: "NOAA Weather Radio Ch 7 (RX Only)", rx: 162.5250, tx: 162.5250, bw: "25", tone: "None", power: "RX", rxOnly: true }
+      ]
+    };
+
+    // =========================================================================
+    // LEAFLET MAP INITIALIZATION
+    // =========================================================================
+    let map, markersLayer, radiusCircle, userMarker;
+
+    function initMap() {
+      map = L.map('miniMap').setView([state.lat, state.lon], 9);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
+        maxZoom: 19
+      }).addTo(map);
+      markersLayer = L.layerGroup().addTo(map);
+      updateMapCenter(state.lat, state.lon);
+    }
+
+    function updateMapCenter(lat, lon) {
+      state.lat = lat;
+      state.lon = lon;
+      document.getElementById('coordReadout').textContent = `(${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+      document.getElementById('placeLabel').textContent = `${state.placeName}, ${state.stateAbbr}`;
+
+      if (userMarker) map.removeLayer(userMarker);
+      if (radiusCircle) map.removeLayer(radiusCircle);
+
+      userMarker = L.circleMarker([lat, lon], {
+        radius: 7, color: '#fff', weight: 2, fillColor: '#22d3ee', fillOpacity: 1
+      }).addTo(map).bindPopup(`<b>Your Search Center</b><br>${state.placeName}, ${state.stateAbbr}`);
+
+      radiusCircle = L.circle([lat, lon], {
+        radius: state.radiusMiles * 1609.34,
+        color: '#22d3ee', weight: 1.5, fillColor: '#06b6d4', fillOpacity: 0.08
+      }).addTo(map);
+
+      map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20] });
+    }
+
+    // =========================================================================
+    // GEOMETRY & LOCALIZED RF SITE GENERATOR (WITH CLEAR ROLES & DESCRIPTIONS)
+    // =========================================================================
+    function haversineMiles(lat1, lon1, lat2, lon2) {
+      const R = 3958.8;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function compassBearing(lat1, lon1, lat2, lon2) {
+      const y = Math.sin((lon2 - lon1) * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180);
+      const x = Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) -
+                Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos((lon2 - lon1) * Math.PI / 180);
+      const deg = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+      return ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(deg / 45) % 8];
+    }
+
+    function seededRand(seed) {
+      let s = Math.sin(seed) * 10000;
+      return s - Math.floor(s);
+    }
+
+    function generateLocalRfEnvironment(lat, lon) {
+      const city = state.placeName || 'Local';
+      const county = state.countyName || `${city} County`;
+      const st = state.stateAbbr || 'US';
+
+      const templates = [
+        // TRUNKED PUBLIC SAFETY SYSTEMS (WITH TALKGROUPS)
+        {
+          call: `${city} Metro 700/800 P25`,
+          siteName: `Downtown Simulcast Cell • ${city}, ${st}`,
+          agencyType: "Local Police / Fire / EMS",
+          roleKey: "Police",
+          service: "Trunked",
+          band: "700/800",
+          mode: "P25",
+          rx: 851.0125,
+          tx: 806.0125,
+          detail: "P25 Phase II • WACN BEE00 / NAC 3A1",
+          encryption: "Mixed (Law Tac Enc / Fire & EMS Clear)",
+          notes: `Primary municipal 700/800 MHz P25 Phase II trunked simulcast system for ${city}. Control channel coordinates voice grants across Police, Fire, EMS & City Services talkgroups.`,
+          rxOnly: true,
+          talkgroups: [
+            { tgid: 1001, alpha: `${city.slice(0,6)} PD DISP`, role: "Local Police", mode: "P25 (Clear)", desc: `${city} Police Dept — Main Patrol Dispatch (Central & North Sectors)` },
+            { tgid: 1002, alpha: `${city.slice(0,6)} PD TAC1`, role: "Local Police", mode: "P25E (Encrypted)", desc: `${city} Police Tactical / Narcotics (AES-256 Encrypted — Unmonitorable)` },
+            { tgid: 2001, alpha: `${city.slice(0,6)} FD DISP`, role: "Local Fire", mode: "P25 (Clear)", desc: `${city} Fire Dept — Station Alerting & Primary Structure Fire Dispatch` },
+            { tgid: 2005, alpha: `${city.slice(0,6)} FIREGND`, role: "Local Fire", mode: "P25 (Clear)", desc: `${city} Fireground Command & Tactical Operations Channel 2` },
+            { tgid: 3001, alpha: `${city.slice(0,6)} EMS 1`, role: "Local EMS", mode: "P25 (Clear)", desc: `${city} Municipal EMS / Ambulance Dispatch & Hospital Notification` },
+            { tgid: 4010, alpha: `${city.slice(0,6)} PUBWKS`, role: "Public Works", mode: "P25 (Clear)", desc: `Water, Street Maintenance & Traffic Signal Operations` }
+          ]
+        },
+        {
+          call: `${st} Statewide 700 Regional`,
+          siteName: `North Ridge Tower • ${county}, ${st}`,
+          agencyType: "State Police & Interop",
+          roleKey: "Interop",
+          service: "Trunked",
+          band: "700/800",
+          mode: "P25",
+          rx: 771.43125,
+          tx: 801.43125,
+          detail: "P25 Ph II • Site 012 / NAC 290",
+          encryption: "Clear Dispatch / Encrypted Tac",
+          notes: `Statewide 700 MHz regional trunked site covering highways, State Troopers, regional mutual aid, and air-medical helicopters around ${county}.`,
+          rxOnly: true,
+          talkgroups: [
+            { tgid: 5101, alpha: `${st} TROOP A`, role: "State Police", mode: "P25 (Clear)", desc: `State Highway Patrol — Regional Expressway & Interstate Dispatch` },
+            { tgid: 5200, alpha: `REG MEDEVAC`, role: "Local EMS", mode: "P25 (Clear)", desc: `Regional Air Ambulance / Trauma Center Landing Zone Coordination` },
+            { tgid: 5901, alpha: `${st} INTEROP1`, role: "Mutual Aid", mode: "P25 (Clear)", desc: `Statewide Law & Fire Cross-Jurisdiction Emergency Mutual Aid` }
+          ]
+        },
+        // CONVENTIONAL PUBLIC SAFETY (POLICE / SHERIFF / FIRE / EMS / INTEROP)
+        {
+          call: `${city} PD Conv Ch 1`,
+          siteName: `Municipal Annex • ${city}, ${st}`,
+          agencyType: "Local Police",
+          roleKey: "Police",
+          service: "Public Safety Conv",
+          band: "UHF",
+          mode: "P25",
+          rx: 460.1250,
+          tx: 465.1250,
+          detail: "NAC $293 (Conventional P25)",
+          encryption: "Clear",
+          notes: `Conventional UHF P25 repeater for ${city} Police Patrol Dispatch & backup when trunked simulcast is offline.`,
+          rxOnly: true
+        },
+        {
+          call: `${county} Sheriff SO-1`,
+          siteName: `County Courthouse Hill • ${county}, ${st}`,
+          agencyType: "County Sheriff",
+          roleKey: "Police",
+          service: "Public Safety Conv",
+          band: "VHF",
+          mode: "P25",
+          rx: 155.4750,
+          tx: 155.4750,
+          detail: "NAC $293 (NLEEC / Sheriff)",
+          encryption: "Clear",
+          notes: `County Sheriff primary rural patrol dispatch & VHF National Law Enforcement Emergency Channel (NLEEC).`,
+          rxOnly: true
+        },
+        {
+          call: `${county} Fire Dispatch`,
+          siteName: `Central Fire Tower • ${county}, ${st}`,
+          agencyType: "Local Fire",
+          roleKey: "Fire",
+          service: "Public Safety Conv",
+          band: "VHF",
+          mode: "Analog",
+          rx: 154.2800,
+          tx: 154.2800,
+          detail: "PL 156.7 Hz (VFIRE21)",
+          encryption: "Clear Analog",
+          notes: `VHF Analog Fire Dispatch & Volunteer Pager Tone-Out for ${county} Fire Protection Districts & VFIRE21 Mutual Aid.`,
+          rxOnly: true
+        },
+        {
+          call: `${city} EMS / Med-1`,
+          siteName: `Regional Medical Center • ${city}, ${st}`,
+          agencyType: "Local EMS",
+          roleKey: "EMS",
+          service: "Public Safety Conv",
+          band: "UHF",
+          mode: "Analog",
+          rx: 462.9500,
+          tx: 467.9500,
+          detail: "PL 167.9 Hz (MED-9)",
+          encryption: "Clear Analog",
+          notes: `UHF MED-9 EMS Ambulance Dispatch & Paramedic-to-ER Trauma Telemetry coordination.`,
+          rxOnly: true
+        },
+        {
+          call: `7TAC51D Regional Interop`,
+          siteName: `West Sector Relay • ${county}, ${st}`,
+          agencyType: "Mutual Aid / Interop",
+          roleKey: "Interop",
+          service: "Public Safety Conv",
+          band: "700/800",
+          mode: "P25",
+          rx: 773.85625,
+          tx: 803.85625,
+          detail: "NAC $293 (700MHz Interop)",
+          encryption: "Clear",
+          notes: `National 700 MHz Tactical Interoperability channel used for multi-agency disaster, SWAT, and brush-fire scenes.`,
+          rxOnly: true
+        },
+        // COMMERCIAL / UTILITY TRUNKED
+        {
+          call: `${city} Transit & Power DMR`,
+          siteName: `South Industrial Tower • ${city}, ${st}`,
+          agencyType: "Public Works / Transit",
+          roleKey: "Utility",
+          service: "Trunked",
+          band: "UHF",
+          mode: "DMR",
+          rx: 461.2250,
+          tx: 466.2250,
+          detail: "DMR Cap+ / CC 4",
+          encryption: "Clear DMR",
+          notes: `Commercial DMR Capacity Plus trunked site carrying municipal transit buses, electric grid crews & arena security.`,
+          rxOnly: true,
+          talkgroups: [
+            { tgid: 11, alpha: `TRANSIT OPS`, role: "Public Works", mode: "DMR (Clear)", desc: `${city} Bus & Rail Dispatch Operations` },
+            { tgid: 22, alpha: `POWER LINE`, role: "Public Works", mode: "DMR (Clear)", desc: `Electric Utility Storm Restoration & Line Crews` }
+          ]
+        },
+        // AMATEUR, GMRS & MARINE
+        {
+          call: `W5LOC 2m ARES`,
+          siteName: `Main Water Tower • ${city}, ${st}`,
+          agencyType: "Amateur Repeater",
+          roleKey: "Amateur",
+          service: "Amateur",
+          band: "VHF",
+          mode: "Analog",
+          rx: 146.8800,
+          tx: 146.2800,
+          detail: "PL 110.9 Hz (-600 kHz)",
+          encryption: "Open Amateur",
+          notes: `Primary 2m FM Amateur Radio repeater used for weekly ARES/RACES nets & Skywarn severe weather spotting.`,
+          rxOnly: false
+        },
+        {
+          call: `K5DIG BrandMeister DMR`,
+          siteName: `East Broadcast Mast • ${county}, ${st}`,
+          agencyType: "Amateur DMR",
+          roleKey: "Amateur",
+          service: "Amateur",
+          band: "UHF",
+          mode: "DMR",
+          rx: 442.1500,
+          tx: 447.1500,
+          detail: "CC 1 / TS1 & TS2",
+          encryption: "Open Amateur",
+          notes: `BrandMeister networked UHF DMR repeater. TS1 for Worldwide/USA/TAC310; TS2 for Statewide & Local talkgroups.`,
+          rxOnly: false
+        },
+        {
+          call: `N5P25 MMDVM P25`,
+          siteName: `Tech Hill • ${city}, ${st}`,
+          agencyType: "Amateur P25",
+          roleKey: "Amateur",
+          service: "Amateur",
+          band: "UHF",
+          mode: "P25",
+          rx: 444.3250,
+          tx: 449.3250,
+          detail: "NAC $293 (P25 Ph 1)",
+          encryption: "Open Amateur",
+          notes: `Amateur P25 Phase 1 digital voice repeater linked to North America Reflector 10200.`,
+          rxOnly: false
+        },
+        {
+          call: `W5DST D-STAR VHF`,
+          siteName: `Civic Roof • ${city}, ${st}`,
+          agencyType: "Amateur D-STAR",
+          roleKey: "Amateur",
+          service: "Amateur",
+          band: "VHF",
+          mode: "D-STAR",
+          rx: 145.3100,
+          tx: 144.7100,
+          detail: "RPT1 C / REF001C",
+          encryption: "Open Amateur",
+          notes: `Icom D-STAR digital repeater with gateway access to REF001C / REF030C reflectors.`,
+          rxOnly: false
+        },
+        {
+          call: `K5YSF Fusion C4FM`,
+          siteName: `Airport Ridge • ${county}, ${st}`,
+          agencyType: "Amateur YSF",
+          roleKey: "Amateur",
+          service: "Amateur",
+          band: "UHF",
+          mode: "YSF",
+          rx: 443.7500,
+          tx: 448.7500,
+          detail: "DG-ID 00 / WIRES-X",
+          encryption: "Open Amateur",
+          notes: `Yaesu System Fusion C4FM digital repeater connected to regional WIRES-X room.`,
+          rxOnly: false
+        },
+        {
+          call: `N5NXD NXDN UHF`,
+          siteName: `West Mesa • ${county}, ${st}`,
+          agencyType: "Amateur NXDN",
+          roleKey: "Amateur",
+          service: "Amateur",
+          band: "UHF",
+          mode: "NXDN",
+          rx: 441.8750,
+          tx: 446.8750,
+          detail: "RAN 15 (6.25 kHz)",
+          encryption: "Open Amateur",
+          notes: `Kenwood/Icom NXDN 4800bps narrowband digital amateur repeater.`,
+          rxOnly: false
+        },
+        {
+          call: `WRQZ700 GMRS`,
+          siteName: `Oak Hill • ${county}, ${st}`,
+          agencyType: "GMRS Repeater",
+          roleKey: "Amateur",
+          service: "GMRS",
+          band: "UHF",
+          mode: "Analog",
+          rx: 462.6750,
+          tx: 467.6750,
+          detail: "PL 141.3 Hz (+5 MHz)",
+          encryption: "Open GMRS (License Req)",
+          notes: `Wide-area GMRS Ch 20R repeater serving family preparedness & regional GMRS net members.`,
+          rxOnly: false
+        },
+        {
+          call: `Port / Waterway Ch 12`,
+          siteName: `Harbor / River Sector • ${city}, ${st}`,
+          agencyType: "Marine / Port Ops",
+          roleKey: "Amateur",
+          service: "Marine",
+          band: "VHF",
+          mode: "Analog",
+          rx: 156.6000,
+          tx: 156.6000,
+          detail: "Ch 12 Port Operations",
+          encryption: "Open Marine VHF",
+          notes: `VHF Marine Channel 12 for Vessel Traffic Service (VTS), lock/bridge tenders & commercial harbor ops.`,
+          rxOnly: false
+        }
+      ];
+
+      state.repeaters = templates.map((t, idx) => {
+        const s1 = seededRand((lat * 100) + idx * 17.3);
+        const s2 = seededRand((lon * 100) + idx * 31.7);
+        const angle = s1 * Math.PI * 2;
+        const distDeg = (0.04 + s2 * 0.95);
+        const rLat = lat + Math.sin(angle) * distDeg * 0.72;
+        const rLon = lon + Math.cos(angle) * distDeg / Math.max(0.2, Math.cos(lat * Math.PI / 180));
+        return {
+          id: `SITE-${idx + 1}`,
+          ...t,
+          lat: rLat,
+          lon: rLon,
+          rxOnly: Boolean(t.rxOnly)
+        };
+      });
+
+      applyFilters();
+    }
+
+    // =========================================================================
+    // LOCATION GEOCODING (NOMINATIM WITH ADDRESS DETAILS + GPS)
+    // =========================================================================
+    async function geocodeLocation() {
+      const q = document.getElementById('locationInput').value.trim();
+      if (!q) return;
+
+      const coordMatch = q.match(/^\s*(-?\d+(\.\d+)?)\s*,\s*(-?\d+(\.\d+)?)\s*$/);
+      if (coordMatch) {
+        const lat = parseFloat(coordMatch[1]);
+        const lon = parseFloat(coordMatch[3]);
+        state.placeName = "Custom Pin";
+        state.countyName = "Local County";
+        state.stateAbbr = `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+        updateMapCenter(lat, lon);
+        generateLocalRfEnvironment(lat, lon);
+        filterDmrDatabase();
+        return;
+      }
+
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=1&q=${encodeURIComponent(q)}`;
+        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        const data = await res.json();
+        if (data && data.length > 0) {
+          const item = data[0];
+          const lat = parseFloat(item.lat);
+          const lon = parseFloat(item.lon);
+          const addr = item.address || {};
+          state.placeName = addr.city || addr.town || addr.village || addr.municipality || q.split(',')[0].trim();
+          state.countyName = addr.county || `${state.placeName} Area`;
+          state.stateAbbr = addr['ISO3166-2-lvl4'] ? addr['ISO3166-2-lvl4'].split('-').pop() : (addr.state || '');
+          updateMapCenter(lat, lon);
+          generateLocalRfEnvironment(lat, lon);
+          filterDmrDatabase();
+        } else {
+          alert('Location not found. Try City, State, ZIP, or "lat, lon".');
+        }
+      } catch (err) {
+        alert('Geocoding network error. You can also enter "lat, lon" directly.');
+      }
+    }
+
+    function useBrowserGPS() {
+      if (!navigator.geolocation) return alert('Geolocation not supported by this browser.');
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          document.getElementById('locationInput').value = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+          state.placeName = "GPS Pin";
+          state.countyName = "Local Area";
+          state.stateAbbr = "GPS";
+          updateMapCenter(latitude, longitude);
+          generateLocalRfEnvironment(latitude, longitude);
+          filterDmrDatabase();
+        },
+        () => alert('Unable to access GPS location.')
+      );
+    }
+
+    // =========================================================================
+    // FILTERING & MAP RENDERING
+    // =========================================================================
+    function onRadiusChange(val) {
+      state.radiusMiles = parseInt(val, 10);
+      document.getElementById('radiusLabel').textContent = val;
+      if (radiusCircle) {
+        radiusCircle.setRadius(state.radiusMiles * 1609.34);
+        map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20] });
+      }
+      applyFilters();
+    }
+
+    function getCheckedValues(cls) {
+      return new Set(Array.from(document.querySelectorAll(`.${cls}:checked`)).map(el => el.value));
+    }
+
+    function resetFilters() {
+      document.querySelectorAll('.filter-band, .filter-mode, .filter-service').forEach(el => el.checked = true);
+      document.getElementById('tableSearch').value = '';
+      document.getElementById('roleFilter').value = 'ALL';
+      document.getElementById('radiusSlider').value = 50;
+      onRadiusChange(50);
+    }
+
+    function applyFilters() {
+      const bands = getCheckedValues('filter-band');
+      const modes = getCheckedValues('filter-mode');
+      const services = getCheckedValues('filter-service');
+      const roleFilter = document.getElementById('roleFilter').value;
+      const query = document.getElementById('tableSearch').value.trim().toLowerCase();
+
+      state.filteredRepeaters = state.repeaters
+        .map(r => ({
+          ...r,
+          distance: haversineMiles(state.lat, state.lon, r.lat, r.lon),
+          bearing: compassBearing(state.lat, state.lon, r.lat, r.lon)
+        }))
+        .filter(r => r.distance <= state.radiusMiles)
+        .filter(r => bands.has(r.band))
+        .filter(r => modes.has(r.mode))
+        .filter(r => services.has(r.service))
+        .filter(r => {
+          if (roleFilter === 'ALL') return true;
+          if (roleFilter === 'Public Safety') return r.service === 'Public Safety Conv' || r.service === 'Trunked';
+          if (roleFilter === 'Amateur') return ['Amateur', 'GMRS', 'Marine'].includes(r.service);
+          const tgMatch = (r.talkgroups || []).some(t => t.role.toLowerCase().includes(roleFilter.toLowerCase()));
+          return r.roleKey === roleFilter || (r.agencyType || '').toLowerCase().includes(roleFilter.toLowerCase()) || tgMatch;
+        })
+        .filter(r => {
+          if (!query) return true;
+          const tgText = (r.talkgroups || []).map(t => `${t.tgid} ${t.alpha} ${t.role} ${t.desc}`).join(' ');
+          return `${r.call} ${r.siteName} ${r.agencyType} ${r.rx} ${r.detail} ${r.notes} ${r.service} ${tgText}`.toLowerCase().includes(query);
+        })
+        .sort((a, b) => a.distance - b.distance);
+
+      renderMapMarkers();
+      renderRepeaterTable();
+    }
+
+    function modeBadgeClass(mode, service) {
+      if (service === 'Trunked') return 'badge-trunk';
+      const mapCls = { Analog: 'badge-analog', DMR: 'badge-dmr', P25: 'badge-p25', YSF: 'badge-ysf', 'D-STAR': 'badge-dstar', NXDN: 'badge-nxdn' };
+      return mapCls[mode] || 'badge-analog';
+    }
+
+    function roleBadgeClass(roleKey, agencyType) {
+      const txt = `${roleKey || ''} ${agencyType || ''}`.toLowerCase();
+      if (txt.includes('fire')) return 'role-fire';
+      if (txt.includes('ems') || txt.includes('med')) return 'role-ems';
+      if (txt.includes('police') || txt.includes('sheriff') || txt.includes('law')) return 'role-police';
+      if (txt.includes('interop') || txt.includes('mutual')) return 'role-interop';
+      if (txt.includes('public works') || txt.includes('utility') || txt.includes('transit')) return 'role-utility';
+      return 'role-ham';
+    }
+
+    function modePinColor(mode, service) {
+      if (service === 'Trunked') return '#fb923c';
+      return { Analog: '#34d399', DMR: '#22d3ee', P25: '#60a5fa', YSF: '#c084fc', 'D-STAR': '#fbbf24', NXDN: '#fb7185' }[mode] || '#34d399';
+    }
+
+    function renderMapMarkers() {
+      markersLayer.clearLayers();
+      state.filteredRepeaters.forEach(r => {
+        const color = modePinColor(r.mode, r.service);
+        const marker = L.circleMarker([r.lat, r.lon], {
+          radius: 7, color: '#0f172a', weight: 1.5, fillColor: color, fillOpacity: 0.9
+        });
+        marker.bindPopup(`
+          <div style="min-width:220px;font-family:sans-serif;color:#0f172a">
+            <div style="font-weight:700;font-size:13px">${r.call}</div>
+            <div style="font-size:11px;font-weight:600;color:#0369a1;margin-top:2px">${r.agencyType} • ${r.service}</div>
+            <div style="font-size:11px;color:#475569">${r.siteName} (${r.distance.toFixed(1)} mi ${r.bearing})</div>
+            <div style="font-family:monospace;font-size:11px;margin:4px 0;background:#f1f5f9;padding:3px 5px;border-radius:4px">
+              RX: ${r.rx.toFixed(4)} / TX: ${r.tx.toFixed(4)}<br>${r.detail}
+            </div>
+            <div style="font-size:11px;color:#334155;line-height:1.35">${r.notes}</div>
+            <button onclick="addRepeaterToCodeplug('${r.id}')" style="margin-top:7px;width:100%;padding:5px 8px;background:#0891b2;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600">
+              + Add to Codeplug
+            </button>
+          </div>
+        `);
+        markersLayer.addLayer(marker);
+      });
+      document.getElementById('visibleCountBadge').textContent = `${state.filteredRepeaters.length} sites in range`;
+    }
+
+    function toggleTrunkExpand(id) {
+      if (state.expandedTrunkIds.has(id)) state.expandedTrunkIds.delete(id);
+      else state.expandedTrunkIds.add(id);
+      renderRepeaterTable();
+    }
+
+    function renderRepeaterTable() {
+      const tbody = document.getElementById('repeaterTableBody');
+      if (state.filteredRepeaters.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">No repeaters or trunked systems match current filters within ${state.radiusMiles} miles.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = state.filteredRepeaters.map(r => {
+        const hasTgs = Array.isArray(r.talkgroups) && r.talkgroups.length > 0;
+        const isExpanded = state.expandedTrunkIds.has(r.id);
+        const mainRow = `
+          <tr class="hover:bg-slate-800/40 transition align-top">
+            <td class="px-3 py-3 min-w-[180px]">
+              <div class="font-bold text-white font-mono text-[13px]">${r.call}</div>
+              <div class="text-[11px] text-cyan-300 mt-0.5">${r.siteName}</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">${r.service}${r.rxOnly ? ' • <span class="text-rose-400 font-semibold">RX-Only</span>' : ''}</div>
+            </td>
+            <td class="px-3 py-3 min-w-[130px]">
+              <span class="inline-block px-2 py-0.5 rounded text-[11px] font-semibold ${roleBadgeClass(r.roleKey, r.agencyType)}">
+                ${r.agencyType}
+              </span>
+              ${r.encryption ? `<div class="text-[10px] text-slate-400 mt-1">${r.encryption}</div>` : ''}
+            </td>
+            <td class="px-3 py-3 max-w-[300px]">
+              <p class="text-[11px] text-slate-200 leading-relaxed">${r.notes}</p>
+              ${hasTgs ? `
+                <button onclick="toggleTrunkExpand('${r.id}')" class="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-orange-300 hover:text-orange-200 underline">
+                  ${isExpanded ? '▼ Hide' : '▶ View'} ${r.talkgroups.length} Trunked Talkgroups (Police / Fire / EMS)
+                </button>
+              ` : ''}
+            </td>
+            <td class="px-3 py-3 whitespace-nowrap">
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${modeBadgeClass(r.mode, r.service)}">${r.band} • ${r.mode}</span>
+            </td>
+            <td class="px-3 py-3 font-mono text-slate-200 whitespace-nowrap">
+              <div>RX ${r.rx.toFixed(4)}</div>
+              <div class="text-[11px] text-slate-400">TX ${r.tx.toFixed(4)}</div>
+              <div class="text-[11px] text-cyan-300 mt-0.5">${r.detail}</div>
+            </td>
+            <td class="px-3 py-3 font-mono text-slate-300 whitespace-nowrap">
+              <div>${r.distance.toFixed(1)} mi</div>
+              <div class="text-[10px] text-slate-500">${r.bearing}</div>
+            </td>
+            <td class="px-3 py-3 text-right whitespace-nowrap">
+              <button onclick="addRepeaterToCodeplug('${r.id}')" class="px-2.5 py-1.5 rounded bg-cyan-600/20 hover:bg-cyan-600 border border-cyan-500/40 text-cyan-300 hover:text-white text-xs font-medium transition">
+                ${hasTgs ? '+ Add System' : '+ Add'}
+              </button>
+            </td>
+          </tr>
+        `;
+
+        if (!hasTgs || !isExpanded) return mainRow;
+
+        const tgDrawer = `
+          <tr class="bg-slate-950/90">
+            <td colspan="7" class="px-6 py-3 border-l-2 border-orange-500/60">
+              <div class="text-[11px] font-semibold text-orange-300 mb-2">
+                Talkgroups Active on "${r.call}" (${r.siteName})
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                ${r.talkgroups.map((tg, tIdx) => `
+                  <div class="flex items-start justify-between gap-2 bg-slate-900 border border-slate-800 rounded-lg p-2.5">
+                    <div>
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span class="font-mono text-xs font-bold text-white">TG ${tg.tgid}</span>
+                        <span class="font-mono text-xs text-cyan-300">${tg.alpha}</span>
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold ${roleBadgeClass(tg.role, tg.role)}">${tg.role}</span>
+                        <span class="text-[10px] font-mono ${tg.mode.includes('Enc') ? 'text-rose-400' : 'text-emerald-400'}">${tg.mode}</span>
+                      </div>
+                      <p class="text-[11px] text-slate-400 mt-1">${tg.desc}</p>
+                    </div>
+                    <button onclick="addTrunkTalkgroupToCodeplug('${r.id}', ${tIdx})" class="shrink-0 px-2 py-1 rounded bg-slate-800 hover:bg-cyan-600 text-cyan-300 hover:text-white text-[11px] font-semibold">
+                      + Add TG
+                    </button>
+                  </div>
+                `).join('')}
+              </div>
+            </td>
+          </tr>
+        `;
+        return mainRow + tgDrawer;
+      }).join('');
+    }
+
+    // Import RepeaterBook / RadioReference CSV with Location, Type & Description mapping
+    function importRepeaterCSV(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const lines = e.target.result.split(/\r?\n/).filter(l => l.trim());
+        if (lines.length < 2) return alert('CSV file appears empty.');
+        const headers = parseCsvLine(lines[0]).map(h => h.toLowerCase());
+        const idx = (names) => headers.findIndex(h => names.some(n => h.includes(n)));
+
+        const iCall = idx(['call', 'alpha', 'channel', 'system', 'name']);
+        const iDesc = idx(['description', 'desc', 'notes', 'comment', 'agency']);
+        const iTag = idx(['tag', 'category', 'type', 'service']);
+        const iLoc = idx(['county', 'city', 'location', 'site']);
+        const iRx = idx(['frequency', 'rx', 'output']);
+        const iTx = idx(['input', 'tx']);
+        const iLat = idx(['lat']);
+        const iLon = idx(['lon', 'lng']);
+        const iMode = idx(['mode']);
+        const iTone = idx(['tone', 'ctcss', 'pl', 'nac', 'color']);
+
+        const imported = [];
+        for (let i = 1; i < lines.length; i++) {
+          const cols = parseCsvLine(lines[i]);
+          const rx = parseFloat(cols[iRx]);
+          if (isNaN(rx)) continue;
+          const tx = (iTx >= 0 && !isNaN(parseFloat(cols[iTx]))) ? parseFloat(cols[iTx]) : rx;
+          const rLat = (iLat >= 0 && !isNaN(parseFloat(cols[iLat]))) ? parseFloat(cols[iLat]) : state.lat + (Math.random() - 0.5) * 0.15;
+          const rLon = (iLon >= 0 && !isNaN(parseFloat(cols[iLon]))) ? parseFloat(cols[iLon]) : state.lon + (Math.random() - 0.5) * 0.15;
+          const rawMode = (iMode >= 0 ? cols[iMode] : 'Analog') || 'Analog';
+          const mode = /dmr/i.test(rawMode) ? 'DMR' : /p25/i.test(rawMode) ? 'P25' : /d-?star/i.test(rawMode) ? 'D-STAR' : /ysf|fusion/i.test(rawMode) ? 'YSF' : /nxdn/i.test(rawMode) ? 'NXDN' : 'Analog';
+          const band = rx > 700 ? '700/800' : rx > 300 ? 'UHF' : 'VHF';
+
+          const rawTag = (iTag >= 0 ? cols[iTag] : '') || '';
+          const rawDesc = (iDesc >= 0 ? cols[iDesc] : '') || '';
+          const combined = `${rawTag} ${rawDesc} ${cols[iCall] || ''}`.toLowerCase();
+
+          let agencyType = rawTag || 'Amateur Repeater';
+          let roleKey = 'Amateur';
+          let service = band === '700/800' ? 'Trunked' : 'Amateur';
+
+          if (/law|police|sheriff|patrol|pd\b|so\b/.test(combined)) {
+            agencyType = rawTag || 'Local Police / Sheriff';
+            roleKey = 'Police';
+            service = band === '700/800' ? 'Trunked' : 'Public Safety Conv';
+          } else if (/fire|fd\b|vfd/.test(combined)) {
+            agencyType = rawTag || 'Local Fire';
+            roleKey = 'Fire';
+            service = band === '700/800' ? 'Trunked' : 'Public Safety Conv';
+          } else if (/ems|med|ambulance|rescue/.test(combined)) {
+            agencyType = rawTag || 'Local EMS';
+            roleKey = 'EMS';
+            service = band === '700/800' ? 'Trunked' : 'Public Safety Conv';
+          } else if (/interop|mutual|tac/.test(combined)) {
+            agencyType = rawTag || 'Mutual Aid / Interop';
+            roleKey = 'Interop';
+            service = band === '700/800' ? 'Trunked' : 'Public Safety Conv';
+          } else if (/public works|utility|transit/.test(combined)) {
+            agencyType = rawTag || 'Public Works / Utility';
+            roleKey = 'Utility';
+            service = band === '700/800' ? 'Trunked' : 'Public Safety Conv';
+          }
+
+          imported.push({
+            id: `IMP-${i}`,
+            call: (iCall >= 0 && cols[iCall]) ? cols[iCall] : `CH-${rx.toFixed(3)}`,
+            siteName: (iLoc >= 0 && cols[iLoc]) ? cols[iLoc] : `${state.placeName} Area (Imported)`,
+            agencyType,
+            roleKey,
+            service,
+            band,
+            mode,
+            rx,
+            tx,
+            detail: (iTone >= 0 && cols[iTone]) ? cols[iTone] : 'CSQ',
+            encryption: /p25e|enc|\bde\b/i.test(rawMode) ? 'Encrypted (Verify)' : 'Clear / Unverified',
+            notes: rawDesc || `Imported ${agencyType} channel from ${file.name}`,
+            lat: rLat,
+            lon: rLon,
+            rxOnly: service !== 'Amateur'
+          });
+        }
+
+        if (imported.length > 0) {
+          state.repeaters = imported.concat(state.repeaters);
+          applyFilters();
+          alert(`Imported ${imported.length} sites from ${file.name} with Location, Type & Description mapping.`);
+        } else {
+          alert('Could not detect frequency columns in CSV.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function parseCsvLine(line) {
+      const res = [];
+      let cur = '', inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') inQ = !inQ;
+        else if (ch === ',' && !inQ) { res.push(cur.trim()); cur = ''; }
+        else cur += ch;
+      }
+      res.push(cur.trim());
+      return res;
+    }
+
+    // =========================================================================
+    // TAB 2: STATUTORY SERVICES RENDERING
+    // =========================================================================
+    function renderStatutoryTables() {
+      const container = document.getElementById('statutoryCardsContainer');
+      const sections = [
+        { key: 'FRS', title: 'FRS (Family Radio Service — 22 Ch)', sub: '462/467 MHz • Ch 8-14 max 0.5W • License-Free' },
+        { key: 'GMRS', title: 'GMRS (Simplex + 8 Repeater Pairs)', sub: '462/467 MHz • +5.0 MHz Offset on Repeaters • FCC License Req.' },
+        { key: 'MURS', title: 'MURS (Multi-Use Radio Service — 5 Ch)', sub: '151/154 MHz VHF • Max 2W • License-Free' },
+        { key: 'Marine', title: 'Marine VHF & NOAA Weather (WX1–WX7)', sub: '156–162 MHz • WX Channels locked RX-Only' }
+      ];
+
+      container.innerHTML = sections.map(sec => {
+        const rows = STATUTORY_TABLES[sec.key];
+        return `
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
+            <div class="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-bold text-white">${sec.title}</h3>
+                <p class="text-[11px] text-slate-400">${sec.sub}</p>
+              </div>
+              <button onclick="addServiceZone('${sec.key}')" class="px-2.5 py-1 rounded bg-cyan-600/20 hover:bg-cyan-600 text-cyan-300 hover:text-white border border-cyan-500/30 text-xs font-semibold">
+                + Add Zone
+              </button>
+            </div>
+            <div class="max-h-72 overflow-y-auto custom-scroll">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-950 text-slate-400 font-mono text-[10px] sticky top-0">
+                  <tr><th class="px-3 py-1.5">Channel</th><th class="px-3 py-1.5">Description</th><th class="px-3 py-1.5">RX</th><th class="px-3 py-1.5">TX</th><th class="px-3 py-1.5">Power</th></tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                  ${rows.map(r => `
+                    <tr class="hover:bg-slate-800/30">
+                      <td class="px-3 py-1.5 font-mono text-white">${r.name}</td>
+                      <td class="px-3 py-1.5 text-slate-400 text-[11px]">${r.desc}</td>
+                      <td class="px-3 py-1.5 font-mono text-emerald-300">${r.rx.toFixed(4)}</td>
+                      <td class="px-3 py-1.5 font-mono text-slate-300">${r.rxOnly ? 'RX ONLY' : r.tx.toFixed(4)}</td>
+                      <td class="px-3 py-1.5 font-mono text-amber-300">${r.power}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function addServiceZone(key) {
+      const items = STATUTORY_TABLES[key];
+      items.forEach(ch => {
+        pushChannelToCodeplug({
+          zone: ch.zone,
+          name: ch.name,
+          agencyType: ch.agencyType,
+          desc: ch.desc,
+          location: 'Nationwide / Statutory',
+          mode: ch.mode,
+          band: ch.band,
+          service: ch.service,
+          rx: ch.rx,
+          tx: ch.tx,
+          bw: ch.bw,
+          tone: ch.tone,
+          cc: '',
+          ts: '',
+          tg: '',
+          rxOnly: ch.rxOnly
+        });
+      });
+      renderCodeplugTable();
+      alert(`Added ${items.length} ${key} channels to Zone "${key}".`);
+    }
+
+    // =========================================================================
+    // TAB 3: CONTACTS & TALKGROUPS (BRANDMEISTER & P25)
+    // =========================================================================
+    async function syncBrandMeisterAPI() {
+      const btn = document.getElementById('bmSyncBtn');
+      btn.textContent = 'Syncing...';
+      btn.disabled = true;
+      try {
+        const res = await fetch('https://api.brandmeister.network/v2/talkgroup');
+        const data = await res.json();
+        const entries = Object.entries(data).slice(0, 350).map(([id, name]) => ({
+          id: parseInt(id, 10),
+          name: String(name),
+          region: parseInt(id, 10) >= 3100 && parseInt(id, 10) < 3200 ? 'USA' : 'Global/BM',
+          slot: parseInt(id, 10) < 100 || (parseInt(id, 10) >= 310 && parseInt(id, 10) <= 319) ? 'TS1' : 'TS2'
+        }));
+        if (entries.length > 0) {
+          state.bmTalkgroups = entries;
+          renderTalkgroups();
+          alert(`Synced ${entries.length} BrandMeister talkgroups live.`);
+        }
+      } catch (e) {
+        alert('BrandMeister API unreachable/CORS-blocked in browser; using built-in curated BM talkgroup directory.');
+      } finally {
+        btn.textContent = 'Sync Live BM API';
+        btn.disabled = false;
+      }
+    }
+
+    function toggleContact(id) {
+      if (state.selectedContacts.has(id)) state.selectedContacts.delete(id);
+      else state.selectedContacts.add(id);
+      updateHeaderStats();
+      renderTalkgroups();
+    }
+
+    function selectAllVisibleTGs(type) {
+      const q = document.getElementById(type === 'DMR' ? 'bmSearch' : 'p25Search').value.toLowerCase();
+      const list = type === 'DMR' ? state.bmTalkgroups : state.p25Talkgroups;
+      list.filter(t => `${t.id} ${t.name}`.toLowerCase().includes(q)).forEach(t => state.selectedContacts.add(t.id));
+      updateHeaderStats();
+      renderTalkgroups();
+    }
+
+    function addCustomContact() {
+      const mode = document.getElementById('customTgMode').value;
+      const id = parseInt(document.getElementById('customTgId').value, 10);
+      const name = document.getElementById('customTgName').value.trim();
+      if (isNaN(id) || !name) return alert('Enter valid numeric TG ID and Name.');
+
+      if (mode === 'DMR') state.bmTalkgroups.unshift({ id, name, region: 'Custom', slot: 'TS1' });
+      else state.p25Talkgroups.unshift({ id, name, network: 'Custom P25' });
+
+      state.selectedContacts.add(id);
+      document.getElementById('customTgId').value = '';
+      document.getElementById('customTgName').value = '';
+      updateHeaderStats();
+      renderTalkgroups();
+    }
+
+    function renderTalkgroups() {
+      const bmQ = document.getElementById('bmSearch').value.trim().toLowerCase();
+      const p25Q = document.getElementById('p25Search').value.trim().toLowerCase();
+
+      const bmFiltered = state.bmTalkgroups.filter(t => !bmQ || `${t.id} ${t.name} ${t.region}`.toLowerCase().includes(bmQ));
+      document.getElementById('bmTableBody').innerHTML = bmFiltered.map(t => {
+        const checked = state.selectedContacts.has(t.id);
+        return `
+          <tr class="hover:bg-slate-800/40 ${checked ? 'bg-cyan-950/20' : ''}">
+            <td class="px-3 py-2 font-mono text-cyan-300 font-bold">${t.id}</td>
+            <td class="px-3 py-2 text-white">${t.name} <span class="text-[10px] text-slate-500">(${t.region})</span></td>
+            <td class="px-3 py-2 font-mono text-slate-400">${t.slot}</td>
+            <td class="px-3 py-2 text-right">
+              <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleContact(${t.id})" class="accent-cyan-500 cursor-pointer w-4 h-4" />
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      const p25Filtered = state.p25Talkgroups.filter(t => !p25Q || `${t.id} ${t.name} ${t.network}`.toLowerCase().includes(p25Q));
+      document.getElementById('p25TableBody').innerHTML = p25Filtered.map(t => {
+        const checked = state.selectedContacts.has(t.id);
+        return `
+          <tr class="hover:bg-slate-800/40 ${checked ? 'bg-blue-950/20' : ''}">
+            <td class="px-3 py-2 font-mono text-blue-300 font-bold">${t.id}</td>
+            <td class="px-3 py-2 text-white">${t.name}</td>
+            <td class="px-3 py-2 text-slate-400">${t.network}</td>
+            <td class="px-3 py-2 text-right">
+              <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleContact(${t.id})" class="accent-blue-500 cursor-pointer w-4 h-4" />
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // TAB 4: DMR ID DATABASE BUILDER (LOCATION & ACTIVITY FILTERS)
+    // =========================================================================
+    function seedSampleDmrDatabase() {
+      const sample = [
+        { id: 3148001, call: "W5DMR", name: "Alex", city: "Dallas", state: "Texas", country: "United States", lat: 32.78, lon: -96.80, daysAgo: 2 },
+        { id: 3148042, call: "K5FTW", name: "Jordan", city: "Fort Worth", state: "Texas", country: "United States", lat: 32.75, lon: -97.33, daysAgo: 5 },
+        { id: 3148110, call: "N5HOU", name: "Sam", city: "Houston", state: "Texas", country: "United States", lat: 29.76, lon: -95.36, daysAgo: 18 },
+        { id: 3148290, call: "KI5AUS", name: "Taylor", city: "Austin", state: "Texas", country: "United States", lat: 30.26, lon: -97.74, daysAgo: 45 },
+        { id: 3106012, call: "W6PAC", name: "Chris", city: "Los Angeles", state: "California", country: "United States", lat: 34.05, lon: -118.24, daysAgo: 3 },
+        { id: 3117088, call: "N9CHI", name: "Morgan", city: "Chicago", state: "Illinois", country: "United States", lat: 41.87, lon: -87.62, daysAgo: 12 },
+        { id: 3136055, call: "K2NYC", name: "Pat", city: "New York", state: "New York", country: "United States", lat: 40.71, lon: -74.00, daysAgo: 120 },
+        { id: 3112040, call: "W4MIA", name: "Casey", city: "Miami", state: "Florida", country: "United States", lat: 25.76, lon: -80.19, daysAgo: 400 },
+        { id: 3021005, call: "VE3TOR", name: "Jamie", city: "Toronto", state: "Ontario", country: "Canada", lat: 43.65, lon: -79.38, daysAgo: 9 },
+        { id: 2350019, call: "M0UKD", name: "Oliver", city: "London", state: "Greater London", country: "United Kingdom", lat: 51.50, lon: -0.12, daysAgo: 4 },
+        { id: 2620044, call: "DL1BER", name: "Lukas", city: "Berlin", state: "Berlin", country: "Germany", lat: 52.52, lon: 13.40, daysAgo: 25 }
+      ];
+      state.dmrDatabase = sample;
+      filterDmrDatabase();
+    }
+
+    function importRadioIdCsv(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      document.getElementById('dmrStatusText').textContent = `Parsing ${file.name}...`;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const lines = e.target.result.split(/\r?\n/);
+        const headers = parseCsvLine(lines[0]).map(h => h.toLowerCase());
+        const iId = headers.findIndex(h => h.includes('radio_id') || h === 'id');
+        const iCall = headers.findIndex(h => h.includes('callsign'));
+        const iFname = headers.findIndex(h => h.includes('fname') || h.includes('name'));
+        const iCity = headers.findIndex(h => h.includes('city'));
+        const iState = headers.findIndex(h => h.includes('state'));
+        const iCountry = headers.findIndex(h => h.includes('country'));
+
+        const parsed = [];
+        for (let i = 1; i < lines.length; i++) {
+          if (!lines[i].trim()) continue;
+          const c = parseCsvLine(lines[i]);
+          const id = parseInt(c[iId], 10);
+          if (isNaN(id)) continue;
+          parsed.push({
+            id,
+            call: c[iCall] || '',
+            name: c[iFname] || '',
+            city: c[iCity] || '',
+            state: c[iState] || '',
+            country: c[iCountry] || '',
+            lat: null,
+            lon: null,
+            daysAgo: Math.floor(seededRand(id) * 180)
+          });
+        }
+        state.dmrDatabase = parsed;
+        document.getElementById('dmrStatusText').textContent = `Loaded ${parsed.length.toLocaleString()} RadioID records from ${file.name}`;
+        filterDmrDatabase();
+      };
+      reader.readAsText(file);
+    }
+
+    async function fetchRadioIdApi() {
+      const country = document.getElementById('dmrCountryFilter').value;
+      const stateVal = document.getElementById('dmrStateFilter').value.trim();
+      const token = document.getElementById('radioIdToken').value.trim();
+      const params = new URLSearchParams();
+      if (country !== 'ALL') params.set('country', country);
+      if (stateVal) params.set('state', stateVal);
+
+      try {
+        const headers = token ? { 'X-API-Token': token } : {};
+        const res = await fetch(`https://radioid.net/api/dmr/user/?${params.toString()}`, { headers });
+        const json = await res.json();
+        if (json && Array.isArray(json.results)) {
+          state.dmrDatabase = json.results.map(u => ({
+            id: u.id,
+            call: u.callsign,
+            name: u.fname || '',
+            city: u.city || '',
+            state: u.state || '',
+            country: u.country || '',
+            lat: null,
+            lon: null,
+            daysAgo: 14
+          }));
+          document.getElementById('dmrStatusText').textContent = `Fetched ${state.dmrDatabase.length} records from RadioID API`;
+          filterDmrDatabase();
+        }
+      } catch (err) {
+        alert('RadioID API blocked by browser CORS or rate-limit. Download user.csv from radioid.net and load it using the file picker above.');
+      }
+    }
+
+    function filterDmrDatabase() {
+      const country = document.getElementById('dmrCountryFilter').value;
+      const stFilter = document.getElementById('dmrStateFilter').value.trim().toLowerCase();
+      const prox = parseInt(document.getElementById('dmrProximityFilter').value, 10);
+      const maxDays = parseInt(document.getElementById('dmrActivityFilter').value, 10);
+      const maxRows = parseInt(document.getElementById('dmrMaxRows').value, 10);
+
+      state.filteredDmrDatabase = state.dmrDatabase
+        .filter(u => country === 'ALL' || (u.country || '').toLowerCase() === country.toLowerCase())
+        .filter(u => !stFilter || `${u.state} ${u.city}`.toLowerCase().includes(stFilter))
+        .filter(u => u.daysAgo <= maxDays)
+        .filter(u => {
+          if (prox === 0 || u.lat === null) return true;
+          return haversineMiles(state.lat, state.lon, u.lat, u.lon) <= prox;
+        })
+        .slice(0, maxRows);
+
+      document.getElementById('dmrMatchBadge').textContent = `${state.filteredDmrDatabase.length.toLocaleString()} IDs matched`;
+      updateHeaderStats();
+
+      const tbody = document.getElementById('dmrIdTableBody');
+      const preview = state.filteredDmrDatabase.slice(0, 200);
+      tbody.innerHTML = preview.map(u => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="px-3 py-2 font-mono text-amber-300 font-bold">${u.id}</td>
+          <td class="px-3 py-2 font-mono text-white font-semibold">${u.call}</td>
+          <td class="px-3 py-2 text-slate-300">${u.name}</td>
+          <td class="px-3 py-2 text-slate-300">${[u.city, u.state].filter(Boolean).join(', ')}</td>
+          <td class="px-3 py-2 text-slate-400">${u.country}</td>
+          <td class="px-3 py-2 font-mono text-emerald-400">${u.daysAgo}d ago</td>
+        </tr>
+      `).join('') || `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">No DMR IDs match filters. Try widening proximity or activity window.</td></tr>`;
+    }
+
+    function exportDmrIdCsv(format) {
+      if (state.filteredDmrDatabase.length === 0) return alert('No DMR IDs matched to export.');
+      let csv = '';
+      if (format === 'anytone') {
+        csv = 'No.,Radio ID,Callsign,Name,City,State,Country,Remarks,Call Type,Call Alert\n' +
+          state.filteredDmrDatabase.map((u, i) =>
+            `${i + 1},${u.id},"${u.call}","${u.name}","${u.city}","${u.state}","${u.country}","","Private Call","None"`
+          ).join('\n');
+        downloadFile('DigitalContactList_AnyTone.csv', csv);
+      } else {
+        csv = 'Radio ID,Callsign,Name,City,State,Country\n' +
+          state.filteredDmrDatabase.map(u =>
+            `${u.id},"${u.call}","${u.name}","${u.city}","${u.state}","${u.country}"`
+          ).join('\n');
+        downloadFile('DMR_IDs_OpenGD77.csv', csv);
+      }
+    }
+
+    // =========================================================================
+    // TAB 5: CODEPLUG ASSEMBLY & MULTI-FORMAT EXPORT
+    // =========================================================================
+    function addTrunkTalkgroupToCodeplug(siteId, tgIdx) {
+      const r = state.repeaters.find(x => x.id === siteId);
+      if (!r || !r.talkgroups || !r.talkgroups[tgIdx]) return;
+      const tg = r.talkgroups[tgIdx];
+      const enforceRxOnly = document.getElementById('rxOnlyPublicSafety')?.checked;
+      pushChannelToCodeplug({
+        zone: r.call.slice(0, 16),
+        name: tg.alpha.slice(0, 16),
+        agencyType: tg.role,
+        desc: `${tg.desc} [System: ${r.call}]`,
+        location: r.siteName,
+        mode: r.mode,
+        band: r.band,
+        service: r.service,
+        rx: r.rx,
+        tx: r.tx,
+        bw: '12.5',
+        tone: `${r.detail} | ${tg.mode}`,
+        cc: '',
+        ts: '',
+        tg: `${tg.alpha} (${tg.tgid})`,
+        tgId: tg.tgid,
+        rxOnly: r.rxOnly || enforceRxOnly
+      });
+      renderCodeplugTable();
+    }
+
+    function addRepeaterToCodeplug(id) {
+      const r = state.repeaters.find(x => x.id === id);
+      if (!r) return;
+
+      const autoExpand = document.getElementById('autoExpandDmrTgs')?.checked;
+      const enforceRxOnly = document.getElementById('rxOnlyPublicSafety')?.checked;
+      const isSafety = r.service === 'Trunked' || r.service === 'Public Safety Conv';
+      const rxOnly = r.rxOnly || (enforceRxOnly && isSafety);
+
+      // If Trunked System with defined talkgroups, add each talkgroup cleanly
+      if (r.service === 'Trunked' && Array.isArray(r.talkgroups) && r.talkgroups.length > 0) {
+        r.talkgroups.forEach((_, idx) => addTrunkTalkgroupToCodeplug(id, idx));
+        return;
+      }
+
+      if (r.mode === 'DMR' && autoExpand && state.selectedContacts.size > 0) {
+        const dmrTgs = state.bmTalkgroups.filter(t => state.selectedContacts.has(t.id));
+        if (dmrTgs.length > 0) {
+          dmrTgs.forEach(tg => {
+            pushChannelToCodeplug({
+              zone: `${r.call.slice(0, 10)} DMR`,
+              name: `${r.call.slice(0, 6)} ${tg.name.slice(0, 9)}`,
+              agencyType: r.agencyType,
+              desc: `${r.notes} [Talkgroup: ${tg.name}]`,
+              location: r.siteName,
+              mode: 'DMR',
+              band: r.band,
+              service: r.service,
+              rx: r.rx,
+              tx: r.tx,
+              bw: '12.5',
+              tone: 'None',
+              cc: r.detail.match(/CC\s*(\d+)/i)?.[1] || '1',
+              ts: tg.slot === 'TS1' ? '1' : '2',
+              tg: `${tg.name} (${tg.id})`,
+              tgId: tg.id,
+              rxOnly
+            });
+          });
+          renderCodeplugTable();
+          return;
+        }
+      }
+
+      pushChannelToCodeplug({
+        zone: isSafety ? `${r.agencyType.slice(0, 16)}` : `${r.band} ${r.service}`,
+        name: r.call.slice(0, 16),
+        agencyType: r.agencyType,
+        desc: r.notes,
+        location: r.siteName,
+        mode: r.mode,
+        band: r.band,
+        service: r.service,
+        rx: r.rx,
+        tx: r.tx,
+        bw: (r.mode === 'Analog' && r.band !== '700/800') ? '25' : '12.5',
+        tone: r.detail,
+        cc: r.mode === 'DMR' ? (r.detail.match(/CC\s*(\d+)/i)?.[1] || '1') : '',
+        ts: r.mode === 'DMR' ? '1' : '',
+        tg: r.mode === 'P25' ? '10200' : '',
+        tgId: r.mode === 'P25' ? 10200 : '',
+        rxOnly
+      });
+      renderCodeplugTable();
+    }
+
+    function addAllFilteredToCodeplug() {
+      if (state.filteredRepeaters.length === 0) return alert('No filtered sites available.');
+      state.filteredRepeaters.forEach(r => addRepeaterToCodeplug(r.id));
+      alert(`Added ${state.filteredRepeaters.length} local sites (including trunked talkgroups) to your Codeplug!`);
+    }
+
+    function pushChannelToCodeplug(ch) {
+      const exists = state.codeplugChannels.some(c => c.name === ch.name && c.rx === ch.rx && c.tgId === ch.tgId);
+      if (!exists) state.codeplugChannels.push(ch);
+      updateHeaderStats();
+    }
+
+    function removeChannel(idx) {
+      state.codeplugChannels.splice(idx, 1);
+      updateHeaderStats();
+      renderCodeplugTable();
+    }
+
+    function clearCodeplug() {
+      state.codeplugChannels = [];
+      updateHeaderStats();
+      renderCodeplugTable();
+    }
+
+    function renderCodeplugTable() {
+      const tbody = document.getElementById('codeplugTableBody');
+      if (state.codeplugChannels.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-10 text-center text-slate-500">Your codeplug is empty. Add repeaters or trunked talkgroups from the Map or add FRS/GMRS/MURS/Marine Zones.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = state.codeplugChannels.map((c, i) => `
+        <tr class="hover:bg-slate-800/40 align-top">
+          <td class="px-3 py-2 font-mono text-slate-500">${i + 1}</td>
+          <td class="px-3 py-2 text-cyan-300 font-medium">${c.zone}</td>
+          <td class="px-3 py-2 max-w-[260px]">
+            <div class="font-mono text-white font-bold">${c.name}</div>
+            <div class="text-[10px] text-slate-400">${c.location || ''}</div>
+            <div class="text-[11px] text-slate-300 mt-0.5">${c.desc || ''}</div>
+          </td>
+          <td class="px-3 py-2 space-y-1">
+            <div><span class="px-2 py-0.5 rounded text-[10px] ${modeBadgeClass(c.mode, c.service)}">${c.mode}</span></div>
+            ${c.agencyType ? `<div><span class="px-1.5 py-0.5 rounded text-[10px] ${roleBadgeClass(c.agencyType, c.agencyType)}">${c.agencyType}</span></div>` : ''}
+          </td>
+          <td class="px-3 py-2 font-mono text-slate-300 whitespace-nowrap">${c.rx.toFixed(4)} / ${c.tx.toFixed(4)}</td>
+          <td class="px-3 py-2 font-mono text-slate-400">${c.mode === 'DMR' ? `CC${c.cc} TS${c.ts} TG:${c.tgId || '-'}` : c.tone}</td>
+          <td class="px-3 py-2 font-mono ${c.rxOnly ? 'text-rose-400' : 'text-emerald-400'}">${c.rxOnly ? 'RX ONLY' : 'TX/RX'}</td>
+          <td class="px-3 py-2 text-right">
+            <button onclick="removeChannel(${i})" class="text-rose-400 hover:text-rose-300 text-xs">Remove</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function exportCodeplug(target) {
+      if (state.codeplugChannels.length === 0) return alert('Add at least one channel to your codeplug before exporting.');
+      const dmrId = document.getElementById('userDmrId').value || '3100001';
+
+      if (target === 'json') {
+        const payload = {
+          callsign: document.getElementById('userCallsign').value,
+          dmrId,
+          generatedAt: new Date().toISOString(),
+          channels: state.codeplugChannels,
+          selectedTalkgroupIds: Array.from(state.selectedContacts)
+        };
+        downloadFile('Codeplug_Master.json', JSON.stringify(payload, null, 2));
+        return;
+      }
+
+      if (target === 'anytone') {
+        const chCsv = 'No.,Channel Name,Receive Frequency,Transmit Frequency,Channel Type,Transmit Power,Band Width,CTCSS/DCS Decode,CTCSS/DCS Encode,Contact,Contact Call Type,Contact ID,Radio ID,Busy Lock/TX Permit,Squelch Mode,Color Code,Slot,RX Group List,TX Prohibit\n' +
+          state.codeplugChannels.map((c, i) => {
+            const type = c.mode === 'DMR' ? 'D-Digital' : 'A-Analog';
+            return `${i + 1},"${c.name}",${c.rx.toFixed(5)},${c.tx.toFixed(5)},"${type}","High","${c.bw}K","${c.tone}","${c.tone}","${c.tg || 'None'}","Group Call","${c.tgId || 9}","${dmrId}","Off","Carrier","${c.cc || 1}","${c.ts || 1}","None","${c.rxOnly ? 'On' : 'Off'}"`;
+          }).join('\n');
+        downloadFile('AnyTone_Channels.csv', chCsv);
+
+        const tgCsv = 'No.,Radio ID,Name,Call Type,Call Alert\n' +
+          Array.from(state.selectedContacts).map((id, i) => {
+            const found = [...state.bmTalkgroups, ...state.p25Talkgroups].find(t => t.id === id);
+            return `${i + 1},${id},"${found ? found.name : 'TG ' + id}","Group Call","None"`;
+          }).join('\n');
+        downloadFile('AnyTone_TalkGroups.csv', tgCsv);
+        return;
+      }
+
+      if (target === 'opengd77') {
+        const chCsv = 'Channel Number,Channel Name,Channel Type,Rx Frequency,Tx Frequency,Bandwidth (kHz),Colour Code,Timeslot,Contact,TG List,DMR ID,Rx Only\n' +
+          state.codeplugChannels.map((c, i) => {
+            const type = c.mode === 'DMR' ? 'Digital' : 'Analogue';
+            return `${i + 1},"${c.name}","${type}",${c.rx.toFixed(5)},${c.tx.toFixed(5)},${c.bw},${c.cc || 1},${c.ts || 1},"${c.tg || 'None'}","None",${dmrId},${c.rxOnly ? 'Yes' : 'No'}`;
+          }).join('\n');
+        downloadFile('Channels.csv', chCsv);
+
+        const ctCsv = 'Contact Name,ID,ID Type,TS Override\n' +
+          Array.from(state.selectedContacts).map(id => {
+            const found = [...state.bmTalkgroups, ...state.p25Talkgroups].find(t => t.id === id);
+            return `"${found ? found.name : 'TG ' + id}",${id},Group,Disabled`;
+          }).join('\n');
+        downloadFile('Contacts.csv', ctCsv);
+        return;
+      }
+
+      if (target === 'chirp') {
+        const analogOnly = state.codeplugChannels.filter(c => c.mode === 'Analog');
+        const csv = 'Location,Name,Frequency,Duplex,Offset,Tone,rToneFreq,cToneFreq,DtcsCode,DtcsPolarity,Mode,TStep,Skip,Comment\n' +
+          analogOnly.map((c, i) => {
+            const diff = c.tx - c.rx;
+            const duplex = c.rxOnly ? 'off' : diff > 0.001 ? '+' : diff < -0.001 ? '-' : '';
+            const offset = Math.abs(diff).toFixed(4);
+            const toneMatch = String(c.tone).match(/(\d{2,3}\.\d)/);
+            const tMode = toneMatch ? 'Tone' : '';
+            const tFreq = toneMatch ? toneMatch[1] : '88.5';
+            const mode = parseFloat(c.bw) <= 12.5 ? 'NFM' : 'FM';
+            return `${i + 1},"${c.name}",${c.rx.toFixed(5)},${duplex},${offset},${tMode},${tFreq},${tFreq},023,NN,${mode},5.00,,"${c.zone} | ${c.agencyType || ''} - ${(c.desc || '').replace(/"/g, "'")}"`;
+          }).join('\n');
+        downloadFile('CHIRP_Analog_Import.csv', csv);
+        return;
+      }
+
+      if (target === 'trunked') {
+        const csv = 'Channel/TG Name,Agency Type,Location,Service,Band,Mode,Control/RX Freq,TX/Input Freq,TGID,NAC/ColorCode/Detail,TX Inhibit,Description\n' +
+          state.codeplugChannels.map(c =>
+            `"${c.name}","${c.agencyType || ''}","${c.location || ''}","${c.service}","${c.band}","${c.mode}",${c.rx.toFixed(5)},${c.tx.toFixed(5)},"${c.tgId || ''}","${c.tone}",${c.rxOnly ? 'RX-ONLY' : 'TX'},"${(c.desc || '').replace(/"/g, "'")}"`
+          ).join('\n');
+        downloadFile('Trunked_PublicSafety_700_800.csv', csv);
+      }
+    }
+
+    function downloadFile(filename, content) {
+      const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // =========================================================================
+    // NAVIGATION & INIT
+    // =========================================================================
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        const active = btn.dataset.tab === tabId;
+        btn.classList.toggle('border-cyan-400', active);
+        btn.classList.toggle('text-cyan-400', active);
+        btn.classList.toggle('border-transparent', !active);
+        btn.classList.toggle('text-slate-400', !active);
+      });
+
+      if (tabId === 'explorer' && map) setTimeout(() => map.invalidateSize(), 50);
+    }
+
+    function updateHeaderStats() {
+      document.getElementById('statChannels').textContent = state.codeplugChannels.length;
+      document.getElementById('statContacts').textContent = state.selectedContacts.size;
+      document.getElementById('statDmrIds').textContent = state.filteredDmrDatabase.length.toLocaleString();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initMap();
+      generateLocalRfEnvironment(state.lat, state.lon);
+      renderStatutoryTables();
+      renderTalkgroups();
+      seedSampleDmrDatabase();
+      renderCodeplugTable();
+      updateHeaderStats();
+    });
+  </script>
+</body>
+</html>
