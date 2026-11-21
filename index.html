@@ -1,3 +1,326 @@
+```javascript
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    const reqOrigin = request.headers.get("Origin") || "";
+    const allowedOrigin = (env.ALLOWED_ORIGIN || "").trim().replace(/\/$/, "");
+
+    if (allowedOrigin && url.pathname !== "/status" && url.pathname !== "/" && reqOrigin !== allowedOrigin) {
+      return new Response(JSON.stringify({ ok: false, error: "Origin not allowed." }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    const corsHeaders = {
+      "Access-Control-Allow-Origin": allowedOrigin || "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Content-Type": "application/json"
+    };
+
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: corsHeaders });
+    }
+
+    try {
+      // 0. Health & Key Status Check
+      if (url.pathname === "/status" || url.pathname === "/") {
+        const rbReady = Boolean((env.RB_APP_TOKEN || "").trim() && (env.RB_USER_AGENT || "").trim());
+        const rrReady = Boolean((env.RR_APP_KEY || "").trim());
+        return new Response(JSON.stringify({
+          ok: true,
+          service: "Codeplug Forge Relay",
+          repeaterbook: rbReady ? "active" : "idle",
+          radioreference: rrReady ? "active" : "idle",
+          originLocked: Boolean(allowedOrigin)
+        }), { status: 200, headers: corsHeaders });
+      }
+
+      // 1. RepeaterBook Proxy (Idle until RB_APP_TOKEN & RB_USER_AGENT are added)
+      if (url.pathname === "/repeaterbook") {
+        const token = (env.RB_APP_TOKEN || "").trim();
+        const ua = (env.RB_USER_AGENT || "").trim();
+
+        if (!token || !ua) {
+          return new Response(JSON.stringify({
+            ok: false,
+            idle: true,
+            error: "RepeaterBook relay is idle: RB_APP_TOKEN / RB_USER_AGENT not configured yet."
+          }), { status: 200, headers: corsHeaders });
+        }
+
+        const latNum = parseFloat(url.searchParams.get("lat"));
+        const lngNum = parseFloat(url.searchParams.get("lng"));
+        if (isNaN(latNum) || isNaN(lngNum)) {
+          return jsonErr("Valid lat and lng query parameters are required.", 400, corsHeaders);
+        }
+
+        const lat = latNum.toFixed(2);
+        const lng = lngNum.toFixed(2);
+        const dist = String(Math.min(150, Math.max(5, parseInt(url.searchParams.get("dist") || "35", 10))));
+        const isRow = url.searchParams.get("row") === "1";
+
+        const cache = caches.default;
+        const cacheKey = new Request("https://rb-cache.internal/" + (isRow ? "row" : "na") + "?lat=" + lat + "&lng=" + lng + "&dist=" + dist);
+        const cached = await cache.match(cacheKey);
+        if (cached) return cached;
+
+        const endpoint = isRow
+          ? "https://www.repeaterbook.com/api/exportROW.php"
+          : "https://www.repeaterbook.com/api/export.php";
+
+        const rbUrl = endpoint + "?qtype=prox&dunit=miles&lat=" + lat + "&lng=" + lng + "&dist=" + dist;
+
+        const rbRes = await fetch(rbUrl, {
+          headers: {
+            "X-RB-App-Token": token,
+            "User-Agent": ua,
+            "Accept": "application/json"
+          }
+        });
+
+        if (rbRes.status === 429) {
+          const retryAfter = rbRes.headers.get("Retry-After") || "60";
+          return jsonErr("RepeaterBook rate limit reached (429). Please wait " + retryAfter + "s before trying again.", 429, corsHeaders);
+        }
+
+        if (rbRes.status >= 500) {
+          return jsonErr("RepeaterBook upstream error (" + rbRes.status + "). Stopping without retries.", rbRes.status, corsHeaders);
+        }
+
+        const body = await rbRes.text();
+        const resp = new Response(body, {
+          status: rbRes.status,
+          headers: { ...corsHeaders, "Cache-Control": "public, max-age=1800" }
+        });
+
+        if (rbRes.ok) {
+          ctx.waitUntil(cache.put(cacheKey, resp.clone()));
+        }
+        return resp;
+      }
+
+      // 2. RadioReference SOAP2 Relay (Idle until RR_APP_KEY is added)
+      if (url.pathname === "/radioreference" && request.method === "POST") {
+        const rrKey = (env.RR_APP_KEY || "").trim();
+        if (!rrKey) {
+          return new Response(JSON.stringify({
+            ok: false,
+            idle: true,
+            error: "RadioReference relay is idle: RR_APP_KEY not configured yet."
+          }), { status: 200, headers: corsHeaders });
+        }
+
+        const payload = await request.json();
+        const username = payload.username;
+        const password = payload.password;
+        const zip = payload.zip;
+
+        if (!username || !password || !zip) {
+          return jsonErr("RadioReference username, password, and 5-digit ZIP are required.", 400, corsHeaders);
+        }
+
+        const authXml = "<authInfo>"
+          + "<appKey>" + escXml(rrKey) + "</appKey>"
+          + "<username>" + escXml(username) + "</username>"
+          + "<password>" + escXml(password) + "</password>"
+          + "<version>latest</version>"
+          + "<style>doc</style>"
+          + "</authInfo>";
+
+        const zipXml = await callRrSoap("getZipcodeInfo", "<zipcode>" + escXml(zip) + "</zipcode>" + authXml);
+        const fault = getXmlTag(zipXml, "faultstring");
+        if (fault) return jsonErr("RadioReference Error: " + fault, 401, corsHeaders);
+
+        const countyId = getXmlTag(zipXml, "countyId");
+        const city = getXmlTag(zipXml, "city") || zip;
+        const stateId = getXmlTag(zipXml, "stateId");
+        const cLat = parseFloat(getXmlTag(zipXml, "lat") || "0");
+        const cLon = parseFloat(getXmlTag(zipXml, "lng") || getXmlTag(zipXml, "lon") || "0");
+
+        if (!countyId) return jsonErr("Could not resolve a County ID for that ZIP code.", 404, corsHeaders);
+
+        const countyXml = await callRrSoap("getCountyInfo", "<ctid>" + escXml(countyId) + "</ctid>" + authXml);
+        const countyName = getXmlTag(countyXml, "countyName") || ("County " + countyId);
+
+        const convItems = getXmlBlocks(countyXml, "freq").map((block, i) => {
+          const rx = parseFloat(getXmlTag(block, "out") || "0");
+          if (!rx) return null;
+          const tx = parseFloat(getXmlTag(block, "in") || "0") || rx;
+          const alpha = getXmlTag(block, "alpha") || getXmlTag(block, "descr") || ("RR-" + rx.toFixed(4));
+          const descr = getXmlTag(block, "descr") || alpha;
+          const mode = getXmlTag(block, "mode") || "FM";
+          const tone = getXmlTag(block, "tone") || getXmlTag(block, "nac") || "CSQ";
+          const enc = getXmlTag(block, "enc") || "0";
+          return {
+            id: "RR-CONV-" + countyId + "-" + i,
+            call: alpha,
+            siteName: city + " / " + countyName,
+            descr: descr,
+            rx: rx,
+            tx: tx,
+            mode: mode,
+            tone: tone,
+            enc: enc,
+            lat: cLat,
+            lon: cLon
+          };
+        }).filter(Boolean);
+
+        const rawSids = getXmlBlocks(countyXml, "trsList").map(b => getXmlTag(b, "sid")).filter(Boolean);
+        const trsIds = Array.from(new Set(rawSids)).slice(0, 4);
+        const trunkedSystems = [];
+
+        for (const sid of trsIds) {
+          const results = await Promise.all([
+            callRrSoap("getTrsDetails", "<sid>" + escXml(sid) + "</sid>" + authXml),
+            callRrSoap("getTrsSites", "<sid>" + escXml(sid) + "</sid>" + authXml),
+            callRrSoap("getTrsTalkgroups", "<sid>" + escXml(sid) + "</sid><tgCid>0</tgCid><tgTag>0</tgTag><tgDec>0</tgDec>" + authXml)
+          ]);
+
+          const trsXml = results[0];
+          const sitesXml = results[1];
+          const tgXml = results[2];
+
+          const sName = getXmlTag(trsXml, "sName") || ("Trunked System " + sid);
+          const sType = getXmlTag(trsXml, "sType") || "P25";
+          const sysid = getXmlTag(trsXml, "sysid") || "";
+          const wacn = getXmlTag(trsXml, "wacn") || "";
+
+          const siteBlock = getXmlBlocks(sitesXml, "item")[0] || sitesXml;
+          const siteDescr = getXmlTag(siteBlock, "descr") || countyName;
+          const sLat = parseFloat(getXmlTag(siteBlock, "lat") || cLat) || cLat;
+          const sLon = parseFloat(getXmlTag(siteBlock, "lon") || cLon) || cLon;
+          const siteFreqs = getXmlBlocks(siteBlock, "siteFreqs").map(f => parseFloat(getXmlTag(f, "freq") || "0")).filter(Boolean);
+
+          const talkgroups = getXmlBlocks(tgXml, "item").slice(0, 80).map(tg => ({
+            tgid: parseInt(getXmlTag(tg, "tgDec") || "0", 10),
+            alpha: getXmlTag(tg, "tgAlpha") || ("TG " + getXmlTag(tg, "tgDec")),
+            desc: getXmlTag(tg, "tgDescr") || "",
+            mode: getXmlTag(tg, "tgMode") || "D",
+            enc: getXmlTag(tg, "enc") || "0"
+          })).filter(t => t.tgid > 0);
+
+          if (siteFreqs.length > 0) {
+            trunkedSystems.push({
+              sid: sid, sName: sName, sType: sType, sysid: sysid, wacn: wacn, siteDescr: siteDescr,
+              rx: siteFreqs[0],
+              allFreqs: siteFreqs.slice(0, 8),
+              lat: sLat, lon: sLon,
+              talkgroups: talkgroups
+            });
+          }
+        }
+
+        return new Response(JSON.stringify({
+          ok: true,
+          countyId: countyId,
+          countyName: countyName,
+          stateId: stateId,
+          city: city,
+          lat: cLat,
+          lon: cLon,
+          conventional: convItems,
+          trunked: trunkedSystems
+        }), { status: 200, headers: corsHeaders });
+      }
+
+      return jsonErr("Unknown endpoint.", 404, corsHeaders);
+    } catch (err) {
+      return jsonErr(err.message || "Worker internal error", 500, corsHeaders);
+    }
+  }
+};
+
+async function callRrSoap(method, innerXml) {
+  const envelope = '<?xml version="1.0" encoding="utf-8"?>'
+    + '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://api.radioreference.com/soap2">'
+    + '<soapenv:Body><soap:' + method + '>' + innerXml + '</soap:' + method + '></soapenv:Body>'
+    + '</soapenv:Envelope>';
+
+  const res = await fetch("https://api.radioreference.com/soap2/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/xml; charset=utf-8",
+      "SOAPAction": "http://api.radioreference.com/soap2#" + method
+    },
+    body: envelope
+  });
+  return await res.text();
+}
+
+function jsonErr(message, status, headers) {
+  return new Response(JSON.stringify({ ok: false, error: message }), { status: status, headers: headers });
+}
+
+function escXml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/'/g, "&apos;")
+    .replace(/"/g, "&quot;");
+}
+
+function getXmlTag(xml, tag) {
+  const blocks = getXmlBlocks(xml, tag);
+  return blocks.length > 0 ? blocks[0] : "";
+}
+
+function getXmlBlocks(xml, tag) {
+  const out = [];
+  const lower = xml.toLowerCase();
+  const target = tag.toLowerCase();
+  let pos = 0;
+
+  while (pos < xml.length) {
+    const openIdx = lower.indexOf("<" + target, pos);
+    const nsOpenIdx = lower.indexOf(":" + target, pos);
+    let startTag = -1;
+
+    if (openIdx !== -1 && (nsOpenIdx === -1 || openIdx < nsOpenIdx)) {
+      startTag = openIdx;
+    } else if (nsOpenIdx !== -1) {
+      const lt = lower.lastIndexOf("<", nsOpenIdx);
+      if (lt !== -1 && lt >= pos && lower.slice(lt + 1, nsOpenIdx).indexOf(">") === -1) {
+        startTag = lt;
+      }
+    }
+
+    if (startTag === -1) break;
+    const tagEnd = xml.indexOf(">", startTag);
+    if (tagEnd === -1) break;
+
+    const tagNameFull = xml.slice(startTag + 1, tagEnd).trim().split(/\s+/)[0];
+    if (tagNameFull.toLowerCase() !== target && !tagNameFull.toLowerCase().endsWith(":" + target)) {
+      pos = tagEnd + 1;
+      continue;
+    }
+
+    const closeTag = "</" + tagNameFull.toLowerCase() + ">";
+    const closeIdx = lower.indexOf(closeTag, tagEnd + 1);
+    if (closeIdx === -1) {
+      pos = tagEnd + 1;
+      continue;
+    }
+
+    let content = xml.slice(tagEnd + 1, closeIdx).trim();
+    if (content.startsWith("<![CDATA[") && content.endsWith("]]>")) {
+      content = content.slice(9, -3).trim();
+    }
+    out.push(content);
+    pos = closeIdx + closeTag.length;
+  }
+
+  return out;
+}
+```
+
+---
+
+### 2. Final `index.html` (Update in GitHub **`index.html`** → **Edit** → `Ctrl+A` → `Backspace` → Paste → **Commit changes**)
+
 ```html
 <!DOCTYPE html>
 <html lang="en" class="dark">
@@ -155,7 +478,7 @@
               <p id="relayHelperMsg" class="text-[10px] text-slate-400 leading-snug">
                 Paste your Cloudflare Worker URL (stays idle until your RepeaterBook token is added).
               </p>
-              <button onclick="fetchRepeaterBookRelay()" id="btnFetchRB" class="w-full py-1.5 px-2 rounded bg-emerald-600/80 hover:bg-emerald-500 text-white text-[11px] font-semibold">
+              <button onclick="fetchRepeaterBookRelay()" id="btnFetchRB" class="w-full py-1.5 px-2 rounded bg-emerald-600/80 hover:bg-emerald-500 disabled:opacity-50 text-white text-[11px] font-semibold">
                 Fetch RepeaterBook (Live)
               </button>
               <div class="grid grid-cols-2 gap-1 pt-1">
@@ -602,10 +925,10 @@
   <!-- ATTRIBUTION FOOTER -->
   <footer class="border-t border-slate-800 bg-slate-950/90 py-3 px-4 text-center text-xs text-slate-400">
     Codeplug Forge (Non-Commercial Amateur Radio Tool) •
-    Repeater data provided by <a href="https://www.repeaterbook.com" target="_blank" rel="noopener" class="text-emerald-400 hover:underline font-medium">RepeaterBook.com</a>,
-    <a href="https://hearham.com" target="_blank" rel="noopener" class="text-cyan-400 hover:underline font-medium">HearHam.com</a>,
+    Data courtesy of <a href="https://www.repeaterbook.com" target="_blank" rel="noopener" class="text-emerald-400 hover:underline font-medium">RepeaterBook.com</a>. •
+    Additional lookups: <a href="https://hearham.com" target="_blank" rel="noopener" class="text-cyan-400 hover:underline font-medium">HearHam.com</a>,
     <a href="https://www.radioreference.com" target="_blank" rel="noopener" class="text-orange-400 hover:underline font-medium">RadioReference.com</a>,
-    and <a href="https://radioid.net" target="_blank" rel="noopener" class="text-amber-400 hover:underline font-medium">RadioID.net</a>.
+    <a href="https://radioid.net" target="_blank" rel="noopener" class="text-amber-400 hover:underline font-medium">RadioID.net</a>.
   </footer>
 
   <script>
@@ -846,13 +1169,14 @@
     // RELAY STATUS & LIVE REPEATER API FETCHERS
     // =========================================================================
     function onRelayUrlChange(val) {
-      const clean = val.trim().replace(/\/$/, '');
+      const clean = val.trim().replace(/\/$/, '').replace(/\/status$/i, '');
+      document.getElementById('relayUrl').value = clean;
       localStorage.setItem('cf_relay_url', clean);
       checkRelayStatus();
     }
 
     async function checkRelayStatus() {
-      const relay = document.getElementById('relayUrl').value.trim().replace(/\/$/, '');
+      const relay = document.getElementById('relayUrl').value.trim().replace(/\/$/, '').replace(/\/status$/i, '');
       const pill = document.getElementById('relayStatusPill');
       const msg = document.getElementById('relayHelperMsg');
 
@@ -998,11 +1322,19 @@
     }
 
     async function fetchRepeaterBookRelay() {
-      const relay = document.getElementById('relayUrl').value.trim().replace(/\/$/, '');
+      const rbBtn = document.getElementById('btnFetchRB');
+      if (rbBtn.disabled) return;
+
+      const relay = document.getElementById('relayUrl').value.trim().replace(/\/$/, '').replace(/\/status$/i, '');
       if (!relay) {
-        document.getElementById('relayHelperMsg').textContent = 'Relay is idle—paste your Cloudflare Worker URL once deployed.';
+        alert('Paste your Cloudflare Worker URL first (e.g. https://your-worker.workers.dev).');
         return;
       }
+
+      // Concurrency 1 + 10-second cooldown
+      rbBtn.disabled = true;
+      setTimeout(() => { rbBtn.disabled = false; }, 10000);
+
       const statusEl = document.getElementById('liveApiStatus');
       statusEl.textContent = 'Querying RepeaterBook...';
 
@@ -1013,6 +1345,7 @@
         if (data.idle) {
           statusEl.textContent = 'RB Idle (No Key)';
           document.getElementById('relayHelperMsg').textContent = data.error;
+          alert(data.error);
           return;
         }
         if (data.ok === false) throw new Error(data.error || data.message || 'Auth error');
@@ -1062,7 +1395,7 @@
         rebuildRepeaterList();
         statusEl.textContent = `RepeaterBook: ${mapped.length} sites`;
         document.getElementById('dataSourceBadge').innerHTML =
-          `Repeater data provided by <a href="https://www.repeaterbook.com" target="_blank" rel="noopener" class="underline text-emerald-300 hover:text-emerald-200">RepeaterBook.com</a> (${mapped.length} sites)`;
+          `Data courtesy of <a href="https://www.repeaterbook.com" target="_blank" rel="noopener" class="underline text-emerald-300 hover:text-emerald-200">RepeaterBook.com</a> (${mapped.length} sites)`;
       } catch (err) {
         statusEl.textContent = 'RB Error';
         alert(`RepeaterBook relay error: ${err.message}`);
@@ -1070,12 +1403,12 @@
     }
 
     async function fetchRadioReferenceRelay() {
-      const relay = document.getElementById('relayUrl').value.trim().replace(/\/$/, '');
+      const relay = document.getElementById('relayUrl').value.trim().replace(/\/$/, '').replace(/\/status$/i, '');
       const username = document.getElementById('rrUser').value.trim();
       const password = document.getElementById('rrPass').value;
       const zip = document.getElementById('rrZip').value.trim();
       if (!relay) {
-        document.getElementById('relayHelperMsg').textContent = 'Relay is idle—paste your Cloudflare Worker URL first.';
+        alert('Paste your Cloudflare Worker URL first.');
         return;
       }
       if (!username || !password || !zip) {
@@ -1096,6 +1429,7 @@
         if (data.idle) {
           statusEl.textContent = 'RR Idle (No Key)';
           document.getElementById('relayHelperMsg').textContent = data.error;
+          alert(data.error + ' (You can still upload a RadioReference CSV in the importer below.)');
           return;
         }
         if (!data.ok) throw new Error(data.error || 'RadioReference login/ZIP lookup failed.');
@@ -1177,7 +1511,7 @@
         rebuildRepeaterList();
         statusEl.textContent = `RR: ${allRr.length} sites`;
         document.getElementById('dataSourceBadge').innerHTML =
-          `Data from <a href="https://www.radioreference.com" target="_blank" rel="noopener" class="underline text-orange-300">RadioReference.com</a> (${data.countyName})`;
+          `Data courtesy of <a href="https://www.radioreference.com" target="_blank" rel="noopener" class="underline text-orange-300">RadioReference.com</a> (${data.countyName})`;
       } catch (err) {
         statusEl.textContent = 'RR Error';
         alert(`RadioReference relay error: ${err.message}`);
