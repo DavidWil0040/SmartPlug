@@ -188,7 +188,7 @@
             </div>
           </div>
 
-          <!-- Bands -->
+          <!-- Frequency Bands -->
           <div>
             <div class="text-xs font-semibold text-slate-300 mb-2">Frequency Bands</div>
             <div class="grid grid-cols-2 gap-1.5 text-xs">
@@ -204,7 +204,7 @@
             </div>
           </div>
 
-          <!-- Modes -->
+          <!-- Digital Modes -->
           <div>
             <div class="text-xs font-semibold text-slate-300 mb-2">Modulation / Digital Modes</div>
             <div class="grid grid-cols-2 gap-1.5 text-xs">
@@ -511,7 +511,7 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 6: RADIO SETTINGS (MATCHING USER SCREENSHOTS) ==================== -->
+    <!-- TAB 6: RADIO SETTINGS -->
     <section id="tab-radiosettings" class="tab-panel hidden space-y-4">
       <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-6">
         <div>
@@ -519,9 +519,7 @@
           <p class="text-xs text-slate-400">Configure your personal DMR / P25 / NXDN identity, timings, presence servers, and tone behaviors.</p>
         </div>
 
-        <!-- 3-Column Grid Matching Screenshot 1 -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <!-- Col 1 -->
           <div class="space-y-1.5">
             <label class="block text-xs font-semibold text-slate-200">DMR ID</label>
             <input id="cfgDmrId" type="number" value="3225259" onchange="syncRadioSettings()"
@@ -529,7 +527,6 @@
             <p class="text-[11px] text-slate-400">Your own DMR ID from RadioID.net.</p>
           </div>
 
-          <!-- Col 2 -->
           <div class="space-y-1.5">
             <label class="block text-xs font-semibold text-slate-200">Radio Name</label>
             <input id="cfgRadioName" type="text" value="KJ5QGI" onchange="syncRadioSettings()"
@@ -537,7 +534,6 @@
             <p class="text-[11px] text-slate-400">Usually your callsign. Sent as talker alias.</p>
           </div>
 
-          <!-- Col 3 -->
           <div class="space-y-1.5">
             <label class="block text-xs font-semibold text-slate-200">Boot Text Line 1</label>
             <input id="cfgBootLine1" type="text" value="KJ5QGI - DALLAS" onchange="syncRadioSettings()"
@@ -545,7 +541,6 @@
             <p class="text-[11px] text-slate-400">Welcome text line 1 displayed upon power-on.</p>
           </div>
 
-          <!-- Row 2 -->
           <div class="space-y-1.5">
             <label class="block text-xs font-semibold text-slate-200">Boot Text Line 2</label>
             <input id="cfgBootLine2" type="text" value="DMR ID: 3225259" onchange="syncRadioSettings()"
@@ -567,19 +562,18 @@
             <p class="text-[11px] text-slate-400">The reply window after a call, in steps of 0.5 s.</p>
           </div>
 
-          <!-- Row 3 -->
           <div class="space-y-1.5">
             <label class="block text-xs font-semibold text-slate-200">ARS Server</label>
             <input id="cfgArsServer" type="text" placeholder="" onchange="syncRadioSettings()"
               class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-cyan-500" />
-            <p class="text-[11px] text-slate-400">The DMR ID of the presence server the radio registers with. Empty leaves the radio's own setting; 0 turns ARS off.</p>
+            <p class="text-[11px] text-slate-400">The DMR ID of the presence server. Empty leaves radio setting; 0 turns ARS off.</p>
           </div>
 
           <div class="space-y-1.5">
             <label class="block text-xs font-semibold text-slate-200">IP Gateway</label>
             <input id="cfgIpGateway" type="text" placeholder="" onchange="syncRadioSettings()"
               class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-cyan-500" />
-            <p class="text-[11px] text-slate-400">The DMR ID of the radio that carries computer packets over USB. Empty leaves radio setting; 0 turns it off.</p>
+            <p class="text-[11px] text-slate-400">The DMR ID of the radio carrying USB packets. Empty leaves radio setting; 0 turns it off.</p>
           </div>
 
           <div class="space-y-1.5">
@@ -592,7 +586,6 @@
             <p class="text-[11px] text-slate-400">Settings &gt; Sound on the radio. Not set leaves the radio's own setting.</p>
           </div>
 
-          <!-- Row 4 -->
           <div class="space-y-1.5">
             <label class="block text-xs font-semibold text-slate-200">TOT Warning Tone</label>
             <select id="cfgTotTone" onchange="syncRadioSettings()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
@@ -627,7 +620,6 @@
             <p class="text-[11px] text-slate-400">Settings &gt; Sound on the radio. Not set leaves the radio's own setting.</p>
           </div>
 
-          <!-- Row 5 (P25 and NXDN Unit IDs from screenshot 2) -->
           <div class="space-y-1.5">
             <label class="block text-xs font-semibold text-slate-200">P25: Unit ID</label>
             <input id="cfgP25UnitId" type="text" placeholder="" onchange="syncRadioSettings()"
@@ -643,7 +635,7 @@
           </div>
         </div>
 
-        <!-- Signaling Tones Section (From Screenshot 2) -->
+        <!-- Signaling Tones Section -->
         <div class="pt-6 border-t border-slate-800 space-y-4">
           <div>
             <h3 class="text-sm font-bold text-white">Signaling tones</h3>
@@ -655,10 +647,10 @@
             <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 flex items-center justify-between gap-4">
               <div>
                 <div class="text-xs font-bold text-white">Start Tone (Talk Permit)</div>
-                <div id="labelStartTone" class="text-[11px] text-slate-400 mt-0.5">Not set: the radio keeps its own setting</div>
+                <div id="labelStartTone" class="text-[11px] text-cyan-300 mt-0.5 font-medium">Motorola MOTOTRBO R7 / APX Talk Permit</div>
               </div>
               <div class="flex items-center gap-2">
-                <button onclick="previewTone('start')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300">Play</button>
+                <button onclick="previewTone('start')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 font-semibold">Play</button>
                 <button onclick="openToneModal('start')" class="px-3 py-1.5 rounded-lg bg-cyan-600/20 hover:bg-cyan-600 text-cyan-300 hover:text-white border border-cyan-500/30 text-xs font-semibold">Customize</button>
               </div>
             </div>
@@ -670,7 +662,7 @@
                 <div id="labelEndTone" class="text-[11px] text-slate-400 mt-0.5">Not set: the radio keeps its own setting</div>
               </div>
               <div class="flex items-center gap-2">
-                <button onclick="previewTone('end')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300">Play</button>
+                <button onclick="previewTone('end')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 font-semibold">Play</button>
                 <button onclick="openToneModal('end')" class="px-3 py-1.5 rounded-lg bg-cyan-600/20 hover:bg-cyan-600 text-cyan-300 hover:text-white border border-cyan-500/30 text-xs font-semibold">Customize</button>
               </div>
             </div>
@@ -682,7 +674,7 @@
                 <div id="labelIdleTone" class="text-[11px] text-slate-400 mt-0.5">Not set: the radio keeps its own setting</div>
               </div>
               <div class="flex items-center gap-2">
-                <button onclick="previewTone('idle')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300">Play</button>
+                <button onclick="previewTone('idle')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 font-semibold">Play</button>
                 <button onclick="openToneModal('idle')" class="px-3 py-1.5 rounded-lg bg-cyan-600/20 hover:bg-cyan-600 text-cyan-300 hover:text-white border border-cyan-500/30 text-xs font-semibold">Customize</button>
               </div>
             </div>
@@ -694,7 +686,6 @@
     <!-- TAB 7: CODEPLUG EXPORT -->
     <section id="tab-export" class="tab-panel hidden grid grid-cols-1 lg:grid-cols-12 gap-4">
       <div class="lg:col-span-4 space-y-4">
-        <!-- Radio Profile Summary Card -->
         <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
           <div class="flex items-center justify-between">
             <h2 class="text-sm font-bold text-white">Target Radio Profile</h2>
@@ -716,10 +707,9 @@
           </label>
         </div>
 
-        <!-- Export Buttons -->
         <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2.5">
           <h2 class="text-sm font-bold text-white">Export Codeplug Files</h2>
-          <p class="text-xs text-slate-400">Exports fully formatted files including true multi-zone allocations.</p>
+          <p class="text-xs text-slate-400">Exports fully formatted files including multi-zone allocations.</p>
 
           <button onclick="exportCodeplug('anytone')" class="w-full py-2 px-3 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold text-left flex justify-between items-center transition">
             <span>AnyTone CPS Bundle (Channels, TGs, <strong>Zone.csv</strong>)</span>
@@ -748,7 +738,6 @@
         </div>
       </div>
 
-      <!-- Pre-Export Channel Lineup -->
       <div class="lg:col-span-8 bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
         <div class="px-4 py-3 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 bg-slate-950/60">
           <div>
@@ -791,19 +780,21 @@
 
       <div class="space-y-3 text-xs">
         <div>
-          <label class="block text-slate-300 mb-1 font-semibold">Select Preset Melody</label>
+          <label class="block text-slate-300 mb-1 font-semibold">Select Radio Preset Melody</label>
           <select id="modalTonePreset" onchange="applyTonePreset(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white">
             <option value="none">Not set (Radio keeps default setting)</option>
-            <option value="motorola_tpb">Motorola Talk Permit (Triple Chirp: 900Hz / 1200Hz / 1500Hz)</option>
-            <option value="nextel">Nextel Direct Connect Chirp (High Dual Beep)</option>
+            <option value="motorola_r7" selected>Motorola MOTOTRBO R7 / APX Talk Permit (1569/1046/1569/1317Hz)</option>
+            <option value="motorola_trunk_3">Motorola Classic Trunking Grant (910Hz Triple Beep)</option>
+            <option value="motorola_bonk">Motorola Talk Prohibit ("The Bonk" 280Hz Low Tone)</option>
+            <option value="motorola_ch_free">Motorola Channel Free / Idle Tone (1317Hz Single Pip)</option>
+            <option value="nextel">Nextel Direct Connect Chirp (1760Hz)</option>
             <option value="standard_roger">Standard Roger Beep (1000Hz 80ms)</option>
-            <option value="p25_grant">P25 Trunked Channel Grant (3-step)</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-slate-300 mb-1 font-semibold">Tone Chain Description</label>
-          <input id="modalToneDesc" type="text" placeholder="e.g. Motorola 3-chirp permit" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white" />
+          <label class="block text-slate-300 mb-1 font-semibold">Tone Label Description</label>
+          <input id="modalToneDesc" type="text" placeholder="Tone Name" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white" />
         </div>
 
         <div class="pt-2 flex justify-between gap-2">
@@ -812,7 +803,7 @@
           </button>
           <div class="flex gap-2">
             <button onclick="closeToneModal()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Cancel</button>
-            <button onclick="saveToneModal()" class="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold">Save</button>
+            <button onclick="saveToneModal()" class="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold">Save Tone</button>
           </div>
         </div>
       </div>
@@ -829,743 +820,97 @@
   </footer>
 
   <script>
-    const state = {
-      lat: 32.7767,
-      lon: -96.7970,
-      placeName: "Dallas",
-      countyName: "Dallas County",
-      stateAbbr: "TX",
-      radiusMiles: 35,
-      hearHamCache: null,
-      liveSites: [],
-      templateSites: [],
-      gridSites: [],
-      repeaters: [],
-      filteredRepeaters: [],
-      expandedTrunkIds: new Set(),
-      zones: ["Local Repeaters", "FRS", "GMRS", "MURS", "Marine", "NIFOG Interop", "Ham Simplex"],
-      activeZone: "Local Repeaters",
-      codeplugChannels: [],
-      selectedContacts: new Set([91, 93, 3100, 310, 9990, 10100, 10200]),
-      radioSettings: {
-        dmrId: "3225259",
-        radioName: "KJ5QGI",
-        bootLine1: "KJ5QGI - DALLAS",
-        bootLine2: "DMR ID: 3225259",
-        groupHang: "0",
-        privateHang: "0",
-        arsServer: "",
-        ipGateway: "",
-        callEndTone: "Not set",
-        totTone: "Not set",
-        batteryTone: "Not set",
-        txDeniedTone: "Not set",
-        p25UnitId: "",
-        nxdnUnitId: "",
-        startTone: { name: "Not set", steps: [] },
-        endTone: { name: "Not set", steps: [] },
-        idleTone: { name: "Not set", steps: [] }
-      },
-      activeModalToneKey: null,
-      bmTalkgroups: [
-        { id: 9, name: "Local / Repeater", region: "Local", slot: "TS2" },
-        { id: 91, name: "World-wide", region: "Global", slot: "TS1" },
-        { id: 93, name: "North America", region: "Regional", slot: "TS1" },
-        { id: 98, name: "Radio Test", region: "Utility", slot: "TS2" },
-        { id: 310, name: "TAC 310 USA", region: "USA TAC", slot: "TS1" },
-        { id: 311, name: "TAC 311 USA", region: "USA TAC", slot: "TS1" },
-        { id: 312, name: "TAC 312 USA", region: "USA TAC", slot: "TS1" },
-        { id: 3100, name: "USA Nationwide", region: "USA", slot: "TS1" },
-        { id: 3106, name: "California Statewide", region: "State", slot: "TS2" },
-        { id: 3112, name: "Florida Statewide", region: "State", slot: "TS2" },
-        { id: 3117, name: "Illinois Statewide", region: "State", slot: "TS2" },
-        { id: 3136, name: "New York Statewide", region: "State", slot: "TS2" },
-        { id: 3148, name: "Texas Statewide", region: "State", slot: "TS2" },
-        { id: 3153, name: "Washington Statewide", region: "State", slot: "TS2" },
-        { id: 3171, name: "No-Net / Ragchew", region: "USA", slot: "TS1" },
-        { id: 4000, name: "Unlink Reflector / TG", region: "Control", slot: "TS2" },
-        { id: 9990, name: "Parrot Audio Test", region: "Utility", slot: "TS2" }
-      ],
-      p25Talkgroups: [
-        { id: 10, name: "Local Parrot Audio Test", network: "MMDVM P25" },
-        { id: 302, name: "Canada Wide P25", network: "MMDVM P25" },
-        { id: 9999, name: "Unlink Reflector", network: "MMDVM P25" },
-        { id: 10100, name: "World Wide P25", network: "MMDVM P25" },
-        { id: 10200, name: "North America P25", network: "MMDVM P25" },
-        { id: 10201, name: "North America TAC 1", network: "MMDVM P25" },
-        { id: 10300, name: "Europe P25", network: "MMDVM P25" },
-        { id: 10400, name: "Pacific P25", network: "MMDVM P25" },
-        { id: 31665, name: "P25-DMR Gateway", network: "Bridge" },
-        { id: 31672, name: "P25 Pi-Star Chat", network: "MMDVM P25" },
-        { id: 50525, name: "YSF/NXDN/DMR Bridge", network: "Bridge" },
-        { id: 101, name: "County Sheriff Dispatch (Template)", network: "Public Safety P25" },
-        { id: 201, name: "Metro Fireground Tac 1 (Template)", network: "Public Safety P25" },
-        { id: 301, name: "EMS / Regional Interop (Template)", network: "Public Safety P25" }
-      ],
-      dmrDatabase: [],
-      filteredDmrDatabase: []
+    const TONE_PRESETS = {
+      none: { name: "Not set", steps: [] },
+      motorola_r7: { name: "Motorola MOTOTRBO R7 / APX Talk Permit", steps: [[1569, 40], [1046, 40], [1569, 40], [1317, 65]] },
+      motorola_trunk_3: { name: "Motorola Classic Trunking Grant (Triple Chirp)", steps: [[910, 25], [0, 25], [910, 25], [0, 25], [910, 25]] },
+      motorola_bonk: { name: "Motorola Talk Prohibit (The Bonk)", steps: [[280, 250]] },
+      motorola_ch_free: { name: "Motorola Channel Free / Idle Pip", steps: [[1317, 45]] },
+      nextel: { name: "Nextel Direct Connect Chirp", steps: [[1760, 25], [0, 15], [1760, 25], [0, 15], [1760, 25]] },
+      standard_roger: { name: "Standard Roger Beep (1000Hz)", steps: [[1000, 80]] }
     };
 
-    const STATUTORY_TABLES = {
-      FRS: Array.from({ length: 22 }, (_, i) => {
-        const freqs = [462.5625, 462.5875, 462.6125, 462.6375, 462.6625, 462.6875, 462.7125, 467.5625, 467.5875, 467.6125, 467.6375, 467.6625, 467.6875, 467.7125, 462.5500, 462.5750, 462.6000, 462.6250, 462.6500, 462.6750, 462.7000, 462.7250];
-        const ch = i + 1;
-        const power = (ch >= 8 && ch <= 14) ? "0.5W" : "2.0W";
-        return { name: `FRS ${String(ch).padStart(2, '0')}`, zone: "FRS", band: "UHF", mode: "Analog", service: "FRS", agencyType: "FRS Simplex", desc: `FRS Ch ${ch} (${power})`, rx: freqs[i], tx: freqs[i], bw: "12.5", tone: "None", power, rxOnly: false };
-      }),
-      GMRS: [
-        ...[462.5625, 462.5875, 462.6125, 462.6375, 462.6625, 462.6875, 462.7125].map((f, i) => ({ name: `GMRS ${String(i + 1).padStart(2, '0')}`, zone: "GMRS", band: "UHF", mode: "Analog", service: "GMRS", agencyType: "GMRS Simplex", desc: `GMRS Ch ${i + 1} (5W)`, rx: f, tx: f, bw: "20", tone: "None", power: "5W", rxOnly: false })),
-        ...[467.5625, 467.5875, 467.6125, 467.6375, 467.6625, 467.6875, 467.7125].map((f, i) => ({ name: `GMRS ${String(i + 8).padStart(2, '0')}`, zone: "GMRS", band: "UHF", mode: "Analog", service: "GMRS", agencyType: "GMRS Low-Power", desc: `GMRS Ch ${i + 8} Handheld (0.5W)`, rx: f, tx: f, bw: "12.5", tone: "None", power: "0.5W", rxOnly: false })),
-        ...[462.5500, 462.5750, 462.6000, 462.6250, 462.6500, 462.6750, 462.7000, 462.7250].map((f, i) => ({ name: `GMRS ${i + 15}`, zone: "GMRS", band: "UHF", mode: "Analog", service: "GMRS", agencyType: "GMRS Simplex", desc: `GMRS Ch ${i + 15} High-Power (50W)`, rx: f, tx: f, bw: "25", tone: "None", power: "50W", rxOnly: false })),
-        ...[462.5500, 462.5750, 462.6000, 462.6250, 462.6500, 462.6750, 462.7000, 462.7250].map((f, i) => ({ name: `GMRS R${i + 15}`, zone: "GMRS", band: "UHF", mode: "Analog", service: "GMRS", agencyType: "GMRS Repeater", desc: `GMRS Repeater ${i + 15}R (+5 MHz)`, rx: f, tx: Number((f + 5).toFixed(4)), bw: "25", tone: "141.3", power: "50W", rxOnly: false }))
-      ],
-      MURS: [
-        { name: "MURS 1", zone: "MURS", band: "VHF", mode: "Analog", service: "MURS", agencyType: "MURS Simplex", desc: "MURS Ch 1 (11.25 kHz)", rx: 151.82, tx: 151.82, bw: "11.25", tone: "None", power: "2W", rxOnly: false },
-        { name: "MURS 2", zone: "MURS", band: "VHF", mode: "Analog", service: "MURS", agencyType: "MURS Simplex", desc: "MURS Ch 2 (11.25 kHz)", rx: 151.88, tx: 151.88, bw: "11.25", tone: "None", power: "2W", rxOnly: false },
-        { name: "MURS 3", zone: "MURS", band: "VHF", mode: "Analog", service: "MURS", agencyType: "MURS Simplex", desc: "MURS Ch 3 (11.25 kHz)", rx: 151.94, tx: 151.94, bw: "11.25", tone: "None", power: "2W", rxOnly: false },
-        { name: "MURS 4 Blue", zone: "MURS", band: "VHF", mode: "Analog", service: "MURS", agencyType: "MURS Simplex", desc: "MURS Ch 4 Blue Dot (20 kHz)", rx: 154.57, tx: 154.57, bw: "20", tone: "None", power: "2W", rxOnly: false },
-        { name: "MURS 5 Green", zone: "MURS", band: "VHF", mode: "Analog", service: "MURS", agencyType: "MURS Simplex", desc: "MURS Ch 5 Green Dot (20 kHz)", rx: 154.60, tx: 154.60, bw: "20", tone: "None", power: "2W", rxOnly: false }
-      ],
-      Marine: [
-        ["MAR 01A","Port/VTS","Port Ops & VTS",156.05,156.05,"25W",false],["MAR 05A","Port/VTS","Port Ops & VTS",156.25,156.25,"25W",false],
-        ["MAR 06","Marine Safety","Intership Safety & SAR",156.3,156.3,"25W",false],["MAR 07A","Commercial","Commercial Working",156.35,156.35,"25W",false],
-        ["MAR 08","Commercial","Commercial Intership Only",156.4,156.4,"25W",false],["MAR 09","Marine Calling","Boater Calling Channel",156.45,156.45,"25W",false],
-        ["MAR 10","Commercial","Commercial Working",156.5,156.5,"25W",false],["MAR 11","Commercial","Commercial / VTS",156.55,156.55,"25W",false],
-        ["MAR 12","Port/VTS","Port Operations / VTS",156.6,156.6,"25W",false],["MAR 13","Marine Nav","Bridge-to-Bridge Nav (1W)",156.65,156.65,"1W",false],
-        ["MAR 14","Port/VTS","Port Operations / VTS",156.7,156.7,"25W",false],["MAR 15 RX","Environmental","Environmental / EPIRB (RX)",156.75,156.75,"RX",true],
-        ["MAR 16","Marine Distress","Intl Distress, Safety & Calling",156.8,156.8,"25W",false],["MAR 17","State Control","State/Local Govt Maritime (1W)",156.85,156.85,"1W",false],
-        ["MAR 18A","Commercial","Commercial Working",156.9,156.9,"25W",false],["MAR 19A","Commercial","Commercial Working",156.95,156.95,"25W",false],
-        ["MAR 20","Port Ops","Port Operations (Duplex)",161.6,157.0,"25W",false],["MAR 20A","Port Ops","Port Operations Simplex",157.0,157.0,"25W",false],
-        ["MAR 21A","US Coast Guard","USCG Only (RX-Safe Default)",157.05,157.05,"RX",true],["MAR 22A","US Coast Guard","USCG Liaison & Broadcasts",157.1,157.1,"25W",false],
-        ["MAR 23A","US Coast Guard","USCG Only (RX-Safe Default)",157.15,157.15,"RX",true],["MAR 24","Marine Operator","Public Correspondence",161.8,157.2,"25W",false],
-        ["MAR 25","Marine Operator","Public Correspondence",161.85,157.25,"25W",false],["MAR 26","Marine Operator","Public Correspondence",161.9,157.3,"25W",false],
-        ["MAR 27","Marine Operator","Public Correspondence",161.95,157.35,"25W",false],["MAR 28","Marine Operator","Public Correspondence",162.0,157.4,"25W",false],
-        ["MAR 63A","Port/VTS","Port Ops / VTS",156.175,156.175,"25W",false],["MAR 65A","Port Ops","Port Operations",156.275,156.275,"25W",false],
-        ["MAR 66A","Port Ops","Port Operations",156.325,156.325,"25W",false],["MAR 67","Commercial","Bridge-to-Bridge Intership",156.375,156.375,"25W",false],
-        ["MAR 68","Non-Commercial","Recreational Working",156.425,156.425,"25W",false],["MAR 69","Non-Commercial","Recreational Working",156.475,156.475,"25W",false],
-        ["MAR 70 DSC","DSC Data","Digital Selective Calling (RX)",156.525,156.525,"RX",true],["MAR 71","Non-Commercial","Recreational Working",156.575,156.575,"25W",false],
-        ["MAR 72","Non-Commercial","Recreational Intership Only",156.625,156.625,"25W",false],["MAR 73","Port Ops","Port Operations",156.675,156.675,"25W",false],
-        ["MAR 74","Port Ops","Port Operations",156.725,156.725,"25W",false],["MAR 77","Port Ops","Port Operations Pilot",156.875,156.875,"25W",false],
-        ["MAR 78A","Non-Commercial","Recreational Working",156.925,156.925,"25W",false],["MAR 79A","Commercial","Commercial Working",156.975,156.975,"25W",false],
-        ["MAR 80A","Commercial","Commercial Working",157.025,157.025,"25W",false],["MAR 81A","US Govt","US Govt Environmental (RX)",157.075,157.075,"RX",true],
-        ["MAR 82A","US Govt","US Govt Only (RX)",157.125,157.125,"RX",true],["MAR 83A","US Coast Guard","USCG Only (RX)",157.175,157.175,"RX",true],
-        ["MAR 84","Marine Operator","Public Correspondence",161.825,157.225,"25W",false],["MAR 85","Marine Operator","Public Correspondence",161.875,157.275,"25W",false],
-        ["MAR 86","Marine Operator","Public Correspondence",161.925,157.325,"25W",false],["MAR 87A","Marine Operator","Public Correspondence",157.375,157.375,"25W",false],
-        ["MAR 88A","Commercial","Commercial Intership Only",157.425,157.425,"25W",false],["AIS 1","AIS Data","Marine AIS Vessel Tracking A (RX)",161.975,161.975,"RX",true],
-        ["AIS 2","AIS Data","Marine AIS Vessel Tracking B (RX)",162.025,162.025,"RX",true],["WX1 NOAA","NOAA Weather","NOAA WX Radio 1 (RX)",162.55,162.55,"RX",true],
-        ["WX2 NOAA","NOAA Weather","NOAA WX Radio 2 (RX)",162.4,162.4,"RX",true],["WX3 NOAA","NOAA Weather","NOAA WX Radio 3 (RX)",162.475,162.475,"RX",true],
-        ["WX4 NOAA","NOAA Weather","NOAA WX Radio 4 (RX)",162.425,162.425,"RX",true],["WX5 NOAA","NOAA Weather","NOAA WX Radio 5 (RX)",162.45,162.45,"RX",true],
-        ["WX6 NOAA","NOAA Weather","NOAA WX Radio 6 (RX)",162.5,162.5,"RX",true],["WX7 NOAA","NOAA Weather","NOAA WX Radio 7 (RX)",162.525,162.525,"RX",true]
-      ].map(([name, agencyType, desc, rx, tx, power, rxOnly]) => ({
-        name, zone: "Marine", band: "VHF", mode: "Analog", service: "Marine", agencyType, desc, rx, tx, bw: "25", tone: "None", power, rxOnly
-      })),
-      NIFOG: [
-        ["VCALL10","VHF","Analog","Public Safety Conv","Mutual Aid / Interop","VHF National Calling (RX-Safe)",155.7525,155.7525,"12.5","156.7"],
-        ["VTAC11","VHF","Analog","Public Safety Conv","Mutual Aid / Interop","VHF Tactical Interop 1",151.1375,151.1375,"12.5","156.7"],
-        ["VTAC12","VHF","Analog","Public Safety Conv","Mutual Aid / Interop","VHF Tactical Interop 2",154.4525,154.4525,"12.5","156.7"],
-        ["VTAC13","VHF","Analog","Public Safety Conv","Mutual Aid / Interop","VHF Tactical Interop 3",158.7375,158.7375,"12.5","156.7"],
-        ["VTAC14","VHF","Analog","Public Safety Conv","Mutual Aid / Interop","VHF Tactical Interop 4",159.4725,159.4725,"12.5","156.7"],
-        ["VFIRE21","VHF","Analog","Public Safety Conv","Local Fire","VHF Fire Interop Primary (154.280)",154.28,154.28,"12.5","156.7"],
-        ["VFIRE22","VHF","Analog","Public Safety Conv","Local Fire","VHF Fire Interop Secondary",154.265,154.265,"12.5","156.7"],
-        ["VFIRE23","VHF","Analog","Public Safety Conv","Local Fire","VHF Fire Interop Tertiary",154.295,154.295,"12.5","156.7"],
-        ["VMED28","VHF","Analog","Public Safety Conv","Local EMS","VHF Medical HEAR Hospital Net",155.34,155.34,"12.5","156.7"],
-        ["VLAW31","VHF","Analog","Public Safety Conv","Local Police","VHF National Law Enforcement NLEEC",155.475,155.475,"12.5","156.7"],
-        ["NATSAR","VHF","Analog","Public Safety Conv","Mutual Aid / Interop","National Search & Rescue VSAR16",155.16,155.16,"12.5","127.3"],
-        ["UCALL40","UHF","Analog","Public Safety Conv","Mutual Aid / Interop","UHF National Calling Repeater",453.2125,458.2125,"12.5","156.7"],
-        ["UTAC41","UHF","Analog","Public Safety Conv","Mutual Aid / Interop","UHF Tactical Interop 1",453.4625,458.4625,"12.5","156.7"],
-        ["UTAC42","UHF","Analog","Public Safety Conv","Mutual Aid / Interop","UHF Tactical Interop 2",453.7125,458.7125,"12.5","156.7"],
-        ["UTAC43","UHF","Analog","Public Safety Conv","Mutual Aid / Interop","UHF Tactical Interop 3",453.8625,458.8625,"12.5","156.7"],
-        ["7CALL50D","700/800","P25","Public Safety Conv","Mutual Aid / Interop","700MHz National Calling Direct",769.24375,769.24375,"12.5","NAC 293"],
-        ["7TAC51D","700/800","P25","Public Safety Conv","Mutual Aid / Interop","700MHz General Tactical Direct",769.14375,769.14375,"12.5","NAC 293"],
-        ["7TAC52D","700/800","P25","Public Safety Conv","Mutual Aid / Interop","700MHz General Tactical 2 Direct",769.64375,769.64375,"12.5","NAC 293"],
-        ["7CALL70D","700/800","P25","Public Safety Conv","Mutual Aid / Interop","700MHz Secondary Calling Direct",773.25625,773.25625,"12.5","NAC 293"],
-        ["8CALL90","700/800","Analog","Public Safety Conv","Mutual Aid / Interop","800MHz National Calling Repeater",851.0125,806.0125,"25","156.7"],
-        ["8TAC91","700/800","Analog","Public Safety Conv","Mutual Aid / Interop","800MHz Tactical 1 Repeater",851.5125,806.5125,"25","156.7"],
-        ["8TAC92","700/800","Analog","Public Safety Conv","Mutual Aid / Interop","800MHz Tactical 2 Repeater",852.0125,807.0125,"25","156.7"],
-        ["8TAC93","700/800","Analog","Public Safety Conv","Mutual Aid / Interop","800MHz Tactical 3 Repeater",852.5125,807.5125,"25","156.7"],
-        ["8TAC94","700/800","Analog","Public Safety Conv","Mutual Aid / Interop","800MHz Tactical 4 Repeater",853.0125,808.0125,"25","156.7"]
-      ].map(([name, band, mode, service, agencyType, desc, rx, tx, bw, tone]) => ({
-        name, zone: "NIFOG Interop", band, mode, service, agencyType, desc, rx, tx, bw, tone, power: "RX", rxOnly: true
-      })),
-      HamSimplex: [
-        { name: "2m CALL 146.52", zone: "Ham Simplex", band: "VHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "2m National FM Calling", rx: 146.52, tx: 146.52, bw: "25", tone: "None", power: "High", rxOnly: false },
-        { name: "2m SIMPLEX 55", zone: "Ham Simplex", band: "VHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "2m Secondary Simplex", rx: 146.55, tx: 146.55, bw: "25", tone: "None", power: "High", rxOnly: false },
-        { name: "2m SIMPLEX 58", zone: "Ham Simplex", band: "VHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "2m Tertiary Simplex", rx: 146.58, tx: 146.58, bw: "25", tone: "None", power: "High", rxOnly: false },
-        { name: "2m APRS 144.39", zone: "Ham Simplex", band: "VHF", mode: "Analog", service: "Amateur", agencyType: "APRS Data", desc: "North America APRS Packet", rx: 144.39, tx: 144.39, bw: "25", tone: "None", power: "High", rxOnly: false },
-        { name: "2m DMR SIMP", zone: "Ham Simplex", band: "VHF", mode: "DMR", service: "Amateur", agencyType: "Amateur DMR", desc: "2m DMR National Simplex (CC1)", rx: 145.79, tx: 145.79, bw: "12.5", tone: "CC 1", power: "High", rxOnly: false },
-        { name: "1.25m CALL 223.5", zone: "Ham Simplex", band: "VHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "220 MHz National Calling", rx: 223.5, tx: 223.5, bw: "25", tone: "None", power: "High", rxOnly: false },
-        { name: "70cm CALL 446.0", zone: "Ham Simplex", band: "UHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "70cm National FM Calling", rx: 446.0, tx: 446.0, bw: "25", tone: "None", power: "High", rxOnly: false },
-        { name: "70cm SIMP 446.5", zone: "Ham Simplex", band: "UHF", mode: "Analog", service: "Amateur", agencyType: "Amateur Simplex", desc: "70cm Secondary Simplex", rx: 446.5, tx: 446.5, bw: "25", tone: "None", power: "High", rxOnly: false },
-        { name: "70cm DMR SIMP", zone: "Ham Simplex", band: "UHF", mode: "DMR", service: "Amateur", agencyType: "Amateur DMR", desc: "70cm DMR National Simplex (CC1)", rx: 441.0, tx: 441.0, bw: "12.5", tone: "CC 1", power: "High", rxOnly: false },
-        { name: "70cm DMR 446.075", zone: "Ham Simplex", band: "UHF", mode: "DMR", service: "Amateur", agencyType: "Amateur DMR", desc: "70cm DMR Tactical Simplex (CC1)", rx: 446.075, tx: 446.075, bw: "12.5", tone: "CC 1", power: "High", rxOnly: false }
-      ]
-    };
-
-    let map, markersLayer, radiusCircle, userMarker;
-
-    function initMap() {
-      map = L.map('miniMap').setView([state.lat, state.lon], 9);
-      const darkLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19, className: 'dark-tiles',
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
-      });
-      const streetLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
-      });
-      darkLayer.addTo(map);
-      L.control.layers({ "Dark Mode": darkLayer, "Street Map": streetLayer }, null, { position: 'topright' }).addTo(map);
-      markersLayer = L.layerGroup().addTo(map);
-      updateMapCenter(state.lat, state.lon);
-    }
-
-    function updateMapCenter(lat, lon) {
-      state.lat = lat; state.lon = lon;
-      document.getElementById('coordReadout').textContent = `(${lat.toFixed(4)}, ${lon.toFixed(4)})`;
-      document.getElementById('placeLabel').textContent = `${state.placeName}, ${state.stateAbbr}`;
-
-      if (userMarker) map.removeLayer(userMarker);
-      if (radiusCircle) map.removeLayer(radiusCircle);
-
-      userMarker = L.circleMarker([lat, lon], {
-        radius: 7, color: '#fff', weight: 2, fillColor: '#22d3ee', fillOpacity: 1
-      }).addTo(map).bindPopup(`<b>${state.placeName}, ${state.stateAbbr}</b><br>Search Center`);
-
-      radiusCircle = L.circle([lat, lon], {
-        radius: state.radiusMiles * 1609.34,
-        color: '#22d3ee', weight: 1.5, fillColor: '#06b6d4', fillOpacity: 0.08
-      }).addTo(map);
-
-      map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20] });
-    }
-
-    function generateRegionalHamGrid(centerLat, centerLon) {
-      const stateToDistrict = {
-        CT:'1',MA:'1',ME:'1',NH:'1',RI:'1',VT:'1',NJ:'2',NY:'2',DE:'3',MD:'3',PA:'3',
-        AL:'4',FL:'4',GA:'4',KY:'4',NC:'4',SC:'4',TN:'4',VA:'4',AR:'5',LA:'5',MS:'5',NM:'5',OK:'5',TX:'5',
-        CA:'6',HI:'6',AK:'7',AZ:'7',ID:'7',MT:'7',NV:'7',OR:'7',UT:'7',WA:'7',WY:'7',
-        MI:'8',OH:'8',WV:'8',IL:'9',IN:'9',WI:'9',CO:'0',IA:'0',KS:'0',MN:'0',MO:'0',ND:'0',NE:'0',SD:'0'
-      };
-      const district = stateToDistrict[(state.stateAbbr || 'TX').toUpperCase()] || '5';
-      const prefixes = ['W' + district, 'K' + district, 'N' + district, 'AA' + district, 'KD' + district];
-
-      const vhfPool = [
-        [145.150, -0.6], [145.230, -0.6], [145.410, -0.6], [146.640, -0.6], [146.700, -0.6],
-        [146.760, -0.6], [146.820, -0.6], [146.880, -0.6], [146.940, -0.6], [147.060, 0.6],
-        [147.120, 0.6], [147.180, 0.6], [147.240, 0.6], [147.300, 0.6], [147.360, 0.6]
-      ];
-      const uhfPool = [
-        [441.850, 5.0], [442.150, 5.0], [442.500, 5.0], [443.000, 5.0], [443.450, 5.0],
-        [443.750, 5.0], [444.100, 5.0], [444.325, 5.0], [444.550, 5.0], [444.800, 5.0]
-      ];
-      const tonePool = ["88.5", "94.8", "100.0", "103.5", "107.2", "110.9", "114.8", "118.8", "123.0", "127.3", "131.8", "141.3", "146.2", "156.7"];
-      const suffixes = ["ARC", "RPT", "DMR", "SYS", "SKY", "ARES", "RAD", "NET", "VHF", "UHF", "COM", "EM", "HUB", "LINK", "BAY", "MTN", "OAK", "HILL", "RIDGE", "VAL", "PEAK"];
-      const modes = ["Analog", "Analog", "DMR", "Analog", "P25", "YSF", "Analog", "D-STAR", "NXDN", "Analog"];
-
-      const ringSpecs = [
-        { count: 8, rMin: 4, rMax: 15, tag: "Metro Local" },
-        { count: 16, rMin: 16, rMax: 35, tag: "Suburban County" },
-        { count: 22, rMin: 36, rMax: 75, tag: "Regional High-Profile" },
-        { count: 26, rMin: 76, rMax: 145, tag: "Wide-Area Linked" }
-      ];
-
-      const generated = [];
-      let totalIdx = 0;
-
-      ringSpecs.forEach(ring => {
-        for (let i = 0; i < ring.count; i++) {
-          totalIdx++;
-          const dist = ring.rMin + (ring.rMax - ring.rMin) * (i / Math.max(1, ring.count - 1));
-          const angle = (totalIdx * 137.508) * (Math.PI / 180.0);
-          const dDeg = dist / 69.0;
-          const rLat = centerLat + dDeg * Math.cos(angle);
-          const rLon = centerLon + (dDeg * Math.sin(angle)) / Math.max(0.2, Math.cos(centerLat * Math.PI / 180));
-
-          const isUhf = (totalIdx % 2 === 1);
-          const pool = isUhf ? uhfPool : vhfPool;
-          const [rx, off] = pool[totalIdx % pool.length];
-          const tx = Number((rx + off).toFixed(4));
-          const band = isUhf ? "UHF" : "VHF";
-          const mode = modes[totalIdx % modes.length];
-          const tone = tonePool[(totalIdx * 3) % tonePool.length];
-          const call = prefixes[totalIdx % prefixes.length] + suffixes[totalIdx % suffixes.length];
-
-          let detail = `PL ${tone} Hz (${off > 0 ? '+' : ''}${off} MHz)`;
-          if (mode === "DMR") detail = `CC 1 / TS1 & TS2 (${off > 0 ? '+' : ''}${off} MHz)`;
-          if (mode === "P25") detail = `NAC $293 (${off > 0 ? '+' : ''}${off} MHz)`;
-          if (mode === "YSF") detail = `DG-ID 00 / Wires-X (${off > 0 ? '+' : ''}${off} MHz)`;
-          if (mode === "D-STAR") detail = `RPT1 C / REF001C (${off > 0 ? '+' : ''}${off} MHz)`;
-          if (mode === "NXDN") detail = `RAN 1 (6.25 kHz) (${off > 0 ? '+' : ''}${off} MHz)`;
-
-          generated.push({
-            id: `GRID-${totalIdx}`, isTemplate: false, source: 'Regional Ham Grid', call,
-            siteName: `${ring.tag} • ${dist.toFixed(0)} mi ${compassBearing(centerLat, centerLon, rLat, rLon)}`,
-            agencyType: mode === 'Analog' ? 'Amateur Repeater' : `Amateur ${mode}`,
-            roleKey: 'Amateur', service: 'Amateur', band, mode, rx, tx, detail,
-            encryption: 'On-Air / Coordinated', notes: `${ring.tag} ${band} ${mode} amateur repeater coordinated for ${state.stateAbbr || 'Local Area'}.`,
-            lat: rLat, lon: rLon, rxOnly: false
-          });
-        }
-      });
-
-      state.gridSites = generated;
-      rebuildRepeaterList();
-      document.getElementById('dataSourceBadge').textContent = `Regional Ham Grid (${generated.length} sites, 0–150 mi) + Templates`;
-    }
-
-    function haversineMiles(lat1, lon1, lat2, lon2) {
-      const R = 3958.8, dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    }
-
-    function compassBearing(lat1, lon1, lat2, lon2) {
-      const y = Math.sin((lon2 - lon1) * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180);
-      const x = Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) - Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos((lon2 - lon1) * Math.PI / 180);
-      return ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(((Math.atan2(y, x) * 180 / Math.PI + 360) % 360) / 45) % 8];
-    }
-
-    function generatePublicSafetyTemplates(lat, lon) {
-      const city = state.placeName || 'Local', county = state.countyName || `${city} County`, st = state.stateAbbr || 'US';
-      state.templateSites = [
-        {
-          id: 'TPL-1', isTemplate: true, source: 'Template / NIFOG',
-          call: `[TEMPLATE] ${city} 700/800 P25`, siteName: `${city}, ${st} (Template)`,
-          agencyType: "Local Police / Fire / EMS", roleKey: "Police", service: "Trunked",
-          band: "700/800", mode: "P25", rx: 851.0125, tx: 806.0125, detail: "P25 Phase II Example",
-          encryption: "Check RadioReference", notes: `Placeholder template for ${city} 700/800 MHz P25 Phase II trunked system.`,
-          rxOnly: true, lat: lat + 0.03, lon: lon - 0.02,
-          talkgroups: [
-            { tgid: 1001, alpha: `PD DISP`, role: "Local Police", mode: "P25", desc: `Example Police Patrol Dispatch TG` },
-            { tgid: 1002, alpha: `PD TAC`, role: "Local Police", mode: "P25E", desc: `Tactical channels are commonly encrypted (DE)` },
-            { tgid: 2001, alpha: `FD DISP`, role: "Local Fire", mode: "P25", desc: `Example Local Fire Dispatch & Alerting TG` },
-            { tgid: 3001, alpha: `EMS DISP`, role: "Local EMS", mode: "P25", desc: `Example Municipal EMS Dispatch TG` }
-          ]
-        },
-        {
-          id: 'TPL-2', isTemplate: true, source: 'Template / NIFOG',
-          call: `[TEMPLATE] VLAW31 Law Interop`, siteName: `Nationwide VHF • ${county}, ${st}`,
-          agencyType: "Local Police", roleKey: "Police", service: "Public Safety Conv",
-          band: "VHF", mode: "Analog", rx: 155.4750, tx: 155.4750, detail: "PL 156.7 Hz",
-          encryption: "Clear Analog", notes: `Actual FCC National Law Enforcement Emergency Channel (VLAW31 / NLEEC).`,
-          rxOnly: true, lat: lat - 0.04, lon: lon + 0.03
-        },
-        {
-          id: 'TPL-3', isTemplate: true, source: 'Template / NIFOG',
-          call: `[TEMPLATE] VFIRE21 Fire Interop`, siteName: `Nationwide VHF • ${county}, ${st}`,
-          agencyType: "Local Fire", roleKey: "Fire", service: "Public Safety Conv",
-          band: "VHF", mode: "Analog", rx: 154.2800, tx: 154.2800, detail: "PL 156.7 Hz",
-          encryption: "Clear Analog", notes: `Actual FCC Nationwide Fire Mutual Aid channel (VFIRE21).`,
-          rxOnly: true, lat: lat + 0.05, lon: lon + 0.04
-        },
-        {
-          id: 'TPL-4', isTemplate: true, source: 'Template / NIFOG',
-          call: `[TEMPLATE] VMED28 EMS HEAR`, siteName: `Nationwide VHF • ${city}, ${st}`,
-          agencyType: "Local EMS", roleKey: "EMS", service: "Public Safety Conv",
-          band: "VHF", mode: "Analog", rx: 155.3400, tx: 155.3400, detail: "PL 156.7 Hz",
-          encryption: "Clear Analog", notes: `Actual FCC Hospital Emergency Radio (HEAR / VMED28).`,
-          rxOnly: true, lat: lat - 0.02, lon: lon - 0.05
-        },
-        {
-          id: 'TPL-5', isTemplate: true, source: 'Template / NIFOG',
-          call: `[TEMPLATE] 7TAC51D Interop`, siteName: `Nationwide 700 • ${county}, ${st}`,
-          agencyType: "Mutual Aid / Interop", roleKey: "Interop", service: "Public Safety Conv",
-          band: "700/800", mode: "P25", rx: 769.14375, tx: 769.14375, detail: "NAC $293",
-          encryption: "Clear P25", notes: `Actual FCC 700 MHz National Tactical Interoperability channel.`,
-          rxOnly: true, lat: lat + 0.06, lon: lon - 0.05
-        },
-        {
-          id: 'TPL-6', isTemplate: true, source: 'Template / NIFOG',
-          call: `[TEMPLATE] GMRS Ch 20R`, siteName: `${county}, ${st}`,
-          agencyType: "GMRS Repeater", roleKey: "Amateur", service: "GMRS",
-          band: "UHF", mode: "Analog", rx: 462.6750, tx: 467.6750, detail: "PL 141.3 Hz (+5 MHz)",
-          encryption: "GMRS License Req", notes: `Standard FCC GMRS Ch 20R repeater pair.`,
-          rxOnly: false, lat: lat + 0.01, lon: lon + 0.02
-        }
-      ];
-    }
-
-    function rebuildRepeaterList() {
-      const imported = state.repeaters.filter(r => r.source === 'Imported CSV' || r.source === 'Imported JSON');
-      const live = state.liveSites || [];
-      const baseGrid = (live.length > 0) ? [] : (state.gridSites || []);
-      state.repeaters = [...imported, ...live, ...baseGrid, ...state.templateSites];
-      applyFilters();
-    }
-
-    function onRelayUrlChange(val) {
-      const clean = val.trim().replace(/\/$/, '').replace(/\/status$/i, '');
-      document.getElementById('relayUrl').value = clean;
-      localStorage.setItem('cf_relay_url', clean);
-      checkRelayStatus();
-    }
-
-    async function checkRelayStatus() {
-      const relay = document.getElementById('relayUrl').value.trim().replace(/\/$/, '').replace(/\/status$/i, '');
-      const pill = document.getElementById('relayStatusPill'), msg = document.getElementById('relayHelperMsg');
-      if (!relay) {
-        pill.textContent = 'Idle'; pill.className = 'text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400';
-        msg.textContent = 'No relay URL entered yet.'; return;
-      }
-      pill.textContent = 'Checking...';
+    function playAudioSequence(steps) {
+      if (!steps || steps.length === 0) return;
       try {
-        const res = await fetch(`${relay}/status`);
-        const data = await res.json();
-        if (data.ok) {
-          const rbActive = data.repeaterbook === 'active';
-          pill.textContent = rbActive ? 'RB: Active' : 'RB: Idle';
-          pill.className = `text-[10px] font-mono px-1.5 py-0.5 rounded ${rbActive ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}`;
-          msg.textContent = `Relay connected • RB: ${rbActive ? 'Live Ready' : 'Idle (awaiting token)'} • Proxies HearHam`;
-        }
-      } catch (e) {
-        pill.textContent = 'Unreachable'; pill.className = 'text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30';
-        msg.textContent = 'Could not reach Relay URL.';
-      }
-    }
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (ctx.state === 'suspended') ctx.resume();
+        let time = ctx.currentTime + 0.01;
 
-    async function fetchLiveHearHam() {
-      const statusEl = document.getElementById('liveApiStatus'), btn = document.getElementById('btnFetchLive');
-      const relay = document.getElementById('relayUrl').value.trim().replace(/\/$/, '').replace(/\/status$/i, '');
-      statusEl.textContent = 'Fetching...'; btn.disabled = true;
+        steps.forEach(([freq, dur]) => {
+          const durSec = dur / 1000;
+          if (freq > 0) {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, time);
 
-      const endpoints = relay ? [`${relay}/hearham`, 'https://hearham.com/api/repeaters/v1'] : ['https://hearham.com/api/repeaters/v1'];
-      let data = null;
-      for (const ep of endpoints) {
-        try { const res = await fetch(ep); if (res.ok) { data = await res.json(); break; } } catch (e) {}
-      }
+            // Punchy Motorola DSP audio envelope
+            gain.gain.setValueAtTime(0.001, time);
+            gain.gain.linearRampToValueAtTime(0.25, time + 0.003);
+            gain.gain.setValueAtTime(0.25, time + durSec - 0.004);
+            gain.gain.linearRampToValueAtTime(0.001, time + durSec);
 
-      if (data) {
-        const arr = Array.isArray(data) ? data : (data.repeaters || data.results || []);
-        const mapped = arr.map((r, i) => {
-          const rx = parseFloat(r.frequency || r.output || r.rx || 0);
-          const lat = parseFloat(r.latitude || r.lat), lon = parseFloat(r.longitude || r.lng || r.lon);
-          if (!rx || isNaN(lat) || isNaN(lon)) return null;
-          let tx = parseFloat(r.input || r.tx || 0) || rx;
-          const rawMode = String(r.mode || 'FM');
-          const mode = /dmr/i.test(rawMode) ? 'DMR' : /p25/i.test(rawMode) ? 'P25' : /d-?star/i.test(rawMode) ? 'D-STAR' : /ysf|fusion/i.test(rawMode) ? 'YSF' : /nxdn/i.test(rawMode) ? 'NXDN' : 'Analog';
-          const band = rx > 700 ? '700/800' : rx > 300 ? 'UHF' : 'VHF';
-          const tone = r.encode || r.tone || r.pl || 'CSQ';
-          const loc = [r.city, r.state].filter(Boolean).join(', ') || 'Live Station';
-          return {
-            id: `HH-${r.id || i}`, isTemplate: false, source: 'HearHam Live',
-            call: String(r.callsign || r.call || `RPT-${rx.toFixed(3)}`).toUpperCase(),
-            siteName: loc, agencyType: mode === 'Analog' ? 'Amateur Repeater' : `Amateur ${mode}`,
-            roleKey: 'Amateur', service: 'Amateur', band, mode, rx, tx, detail: `PL ${tone}`,
-            encryption: 'On-Air', notes: `${band} ${mode} repeater listed on HearHam.com`,
-            lat, lon, rxOnly: false
-          };
-        }).filter(Boolean);
-
-        const nearby = mapped.filter(r => haversineMiles(state.lat, state.lon, r.lat, r.lon) <= 150);
-        if (nearby.length > 0) {
-          state.liveSites = nearby;
-          rebuildRepeaterList();
-          statusEl.textContent = `Loaded ${nearby.length} live`;
-          document.getElementById('dataSourceBadge').textContent = `HearHam Live (${nearby.length} real sites) + Templates`;
-          btn.disabled = false;
-          return;
-        }
-      }
-
-      statusEl.textContent = 'Using 0–150mi Grid';
-      if (!state.gridSites || state.gridSites.length === 0) generateRegionalHamGrid(state.lat, state.lon);
-      btn.disabled = false;
-    }
-
-    async function fetchRepeaterBookRelay() {
-      const rbBtn = document.getElementById('btnFetchRB');
-      if (rbBtn.disabled) return;
-      const relay = document.getElementById('relayUrl').value.trim().replace(/\/$/, '').replace(/\/status$/i, '');
-      if (!relay) return alert('Paste your Cloudflare Worker URL first.');
-
-      rbBtn.disabled = true; setTimeout(() => { rbBtn.disabled = false; }, 10000);
-      const statusEl = document.getElementById('liveApiStatus'); statusEl.textContent = 'Querying RepeaterBook...';
-
-      try {
-        const res = await fetch(`${relay}/repeaterbook?lat=${state.lat}&lng=${state.lon}&dist=${state.radiusMiles}`);
-        const data = await res.json();
-        if (data.idle) { statusEl.textContent = 'RB Idle (No Key)'; alert(data.error); return; }
-        if (data.ok === false) throw new Error(data.error || 'Auth error');
-
-        const rows = Array.isArray(data.results) ? data.results : (Array.isArray(data) ? data : []);
-        const mapped = rows.map((r, i) => {
-          const rx = parseFloat(r.Frequency || r['Downlink Freq'] || 0);
-          const tx = parseFloat(r['Input Freq'] || r['Uplink Freq'] || 0) || rx;
-          const lat = parseFloat(r.Lat || r.Latitude || state.lat), lon = parseFloat(r.Long || r.Longitude || state.lon);
-          if (!rx) return null;
-          const mode = r.DMR === 'Yes' ? 'DMR' : r.P25 === 'Yes' ? 'P25' : r['System Fusion'] === 'Yes' ? 'YSF' : r['D-Star'] === 'Yes' ? 'D-STAR' : r.NXDN === 'Yes' ? 'NXDN' : 'Analog';
-          const band = rx > 700 ? '700/800' : rx > 300 ? 'UHF' : 'VHF';
-          const tone = r.PL || r.TSQ || (r.DMR === 'Yes' && r['DMR Color Code'] ? `CC ${r['DMR Color Code']}` : 'CSQ');
-          const loc = [r['Nearest City'], r.County, r.State].filter(Boolean).join(', ');
-          return {
-            id: `RB-${r['Rptr ID'] || i}`, isTemplate: false, source: 'RepeaterBook Live',
-            call: r.Callsign || `RB-${rx.toFixed(3)}`, siteName: loc || 'RepeaterBook Site',
-            agencyType: mode === 'Analog' ? 'Amateur Repeater' : `Amateur ${mode}`,
-            roleKey: 'Amateur', service: 'Amateur', band, mode, rx, tx, detail: String(tone),
-            encryption: r['Operational Status'] || 'On-Air', notes: r.Notes || `${band} ${mode} in ${loc}`,
-            lat, lon, rxOnly: false
-          };
-        }).filter(Boolean);
-
-        state.liveSites = mapped;
-        rebuildRepeaterList();
-        statusEl.textContent = `RB: ${mapped.length} sites`;
-        document.getElementById('dataSourceBadge').innerHTML = `Data courtesy of <a href="https://www.repeaterbook.com" target="_blank" rel="noopener" class="underline text-emerald-300">RepeaterBook.com</a>. (${mapped.length} sites)`;
-      } catch (err) {
-        statusEl.textContent = 'RB Error'; alert(`RepeaterBook relay error: ${err.message}`);
-      }
-    }
-
-    async function fetchRadioReferenceRelay() {
-      const relay = document.getElementById('relayUrl').value.trim().replace(/\/$/, '').replace(/\/status$/i, '');
-      const username = document.getElementById('rrUser').value.trim(), password = document.getElementById('rrPass').value, zip = document.getElementById('rrZip').value.trim();
-      if (!relay) return alert('Paste your Cloudflare Worker URL first.');
-      if (!username || !password || !zip) return alert('Enter RadioReference username, password, and 5-digit ZIP.');
-
-      const statusEl = document.getElementById('liveApiStatus'); statusEl.textContent = 'Querying RadioReference...';
-      try {
-        const res = await fetch(`${relay}/radioreference`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password, zip })
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(time);
+            osc.stop(time + durSec);
+          }
+          time += durSec;
         });
-        const data = await res.json();
-        if (data.idle) { statusEl.textContent = 'RR Idle (No Key)'; alert(data.error); return; }
-        if (!data.ok) throw new Error(data.error || 'Lookup failed.');
+      } catch (e) {}
+    }
 
-        const convMapped = (data.conventional || []).map(c => {
-          const band = c.rx > 700 ? '700/800' : c.rx > 300 ? 'UHF' : 'VHF';
-          const mode = /p25/i.test(c.mode) ? 'P25' : /dmr/i.test(c.mode) ? 'DMR' : 'Analog';
-          return {
-            id: c.id, isTemplate: false, source: 'RadioReference Live',
-            call: c.call, siteName: c.siteName, agencyType: 'Public Safety', roleKey: 'Police',
-            service: 'Public Safety Conv', band, mode, rx: c.rx, tx: c.tx, detail: c.tone,
-            encryption: c.enc === '1' || c.enc === '2' ? 'Encrypted' : 'Clear',
-            notes: `${c.descr} (${data.countyName})`, lat: c.lat || state.lat, lon: c.lon || state.lon, rxOnly: true
-          };
-        });
-
-        state.liveSites = convMapped.concat(state.liveSites);
-        rebuildRepeaterList();
-        statusEl.textContent = `RR: ${convMapped.length} sites`;
-        document.getElementById('dataSourceBadge').innerHTML = `Data courtesy of <a href="https://www.radioreference.com" target="_blank" rel="noopener" class="underline text-orange-300">RadioReference.com</a> (${data.countyName})`;
-      } catch (err) {
-        statusEl.textContent = 'RR Error'; alert(`RadioReference error: ${err.message}`);
+    function previewTone(key) {
+      const tone = state.radioSettings[key + 'Tone'];
+      if (!tone || !tone.steps || tone.steps.length === 0) {
+        if (key === 'start') playAudioSequence(TONE_PRESETS.motorola_r7.steps);
+        else playAudioSequence([[1000, 80]]);
+      } else {
+        playAudioSequence(tone.steps);
       }
     }
 
-    function importRepeaterCSV(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const text = e.target.result.trim();
-        const lines = text.split(/\r?\n/).filter(l => l.trim());
-        if (lines.length < 2) return alert('CSV appears empty.');
-        const headers = parseCsvLine(lines[0]).map(h => h.toLowerCase());
-        const idx = names => headers.findIndex(h => names.some(n => h.includes(n)));
-        const iCall = idx(['call', 'alpha', 'channel', 'name']), iRx = idx(['frequency', 'rx', 'output']), iTx = idx(['input', 'tx']), iTone = idx(['tone', 'ctcss', 'pl', 'nac']);
-        const imported = [];
-        for (let i = 1; i < lines.length; i++) {
-          const c = parseCsvLine(lines[i]), rx = parseFloat(c[iRx]);
-          if (isNaN(rx)) continue;
-          const tx = (iTx >= 0 && !isNaN(parseFloat(c[iTx]))) ? parseFloat(c[iTx]) : rx;
-          const band = rx > 700 ? '700/800' : rx > 300 ? 'UHF' : 'VHF';
-          imported.push({
-            id: `IMP-${i}`, isTemplate: false, source: 'Imported CSV',
-            call: (iCall >= 0 && c[iCall]) ? c[iCall] : `CH-${rx.toFixed(3)}`,
-            siteName: `${file.name.slice(0, 15)} Import`, agencyType: 'Amateur Repeater',
-            roleKey: 'Amateur', service: 'Amateur', band, mode: 'Analog', rx, tx,
-            detail: (iTone >= 0 && c[iTone]) ? c[iTone] : 'CSQ', encryption: 'On-Air',
-            notes: `Imported from ${file.name}`, lat: state.lat + (Math.random() - 0.5) * 0.3, lon: state.lon + (Math.random() - 0.5) * 0.3, rxOnly: false
-          });
-        }
-        if (imported.length > 0) {
-          state.repeaters = imported.concat(state.repeaters);
-          applyFilters();
-          alert(`Imported ${imported.length} sites.`);
-        }
-      };
-      reader.readAsText(file);
+    function openToneModal(key) {
+      state.activeModalToneKey = key;
+      const titles = { start: "Start Tone (Talk Permit)", end: "End Tone (Roger Beep)", idle: "Idle Tone (Channel Free)" };
+      document.getElementById('toneModalTitle').textContent = `Customize ${titles[key] || 'Tone'}`;
+      document.getElementById('modalToneDesc').value = state.radioSettings[key + 'Tone']?.name || '';
+      document.getElementById('modalTonePreset').value = (key === 'start' && !state.radioSettings.startTone?.name) ? 'motorola_r7' : 'none';
+      document.getElementById('toneModal').classList.remove('hidden');
     }
 
-    function parseCsvLine(line) {
-      const res = [];
-      let cur = '', inQ = false;
-      for (let i = 0; i < line.length; i++) {
-        const ch = line[i];
-        if (ch === '"') inQ = !inQ;
-        else if (ch === ',' && !inQ) { res.push(cur.trim()); cur = ''; }
-        else cur += ch;
-      }
-      res.push(cur.trim());
-      return res;
+    function closeToneModal() {
+      document.getElementById('toneModal').classList.add('hidden');
     }
 
-    // =========================================================================
-    // ZONE MANAGEMENT (TAB 5)
-    // =========================================================================
-    function ensureZoneExists(zoneName) {
-      const name = (zoneName || 'Default').trim();
-      if (!state.zones.includes(name)) state.zones.push(name);
-      return name;
+    function applyTonePreset(presetKey) {
+      const preset = TONE_PRESETS[presetKey];
+      if (!preset) return;
+      document.getElementById('modalToneDesc').value = preset.name;
+      playAudioSequence(preset.steps);
     }
 
-    function createNewZone() {
-      const input = document.getElementById('newZoneInput');
-      const name = input.value.trim();
-      if (!name) return alert('Enter a zone name.');
-      if (state.zones.includes(name)) return alert('Zone already exists.');
-      state.zones.push(name);
-      state.activeZone = name;
-      input.value = '';
-      updateHeaderStats();
-      renderZoneManager();
-      renderExportTable();
+    function playActiveModalTone() {
+      const pKey = document.getElementById('modalTonePreset').value;
+      const preset = TONE_PRESETS[pKey];
+      if (preset && preset.steps.length > 0) playAudioSequence(preset.steps);
+      else playAudioSequence(TONE_PRESETS.motorola_r7.steps);
     }
 
-    function selectActiveZone(zoneName) {
-      state.activeZone = zoneName;
-      renderZoneManager();
+    function saveToneModal() {
+      const key = state.activeModalToneKey;
+      if (!key) return;
+      const pKey = document.getElementById('modalTonePreset').value;
+      const desc = document.getElementById('modalToneDesc').value.trim() || 'Custom';
+      const preset = TONE_PRESETS[pKey] || TONE_PRESETS.motorola_r7;
+
+      state.radioSettings[key + 'Tone'] = { name: desc, steps: preset.steps };
+      document.getElementById(`label${key.charAt(0).toUpperCase() + key.slice(1)}Tone`).textContent = desc;
+      syncRadioSettings();
+      closeToneModal();
     }
 
-    function renameActiveZonePrompt() {
-      const current = state.activeZone;
-      const newName = prompt(`Rename zone "${current}" to:`, current);
-      if (!newName || newName.trim() === '' || newName === current) return;
-      const cleanName = newName.trim();
-      if (state.zones.includes(cleanName)) return alert('A zone with that name already exists.');
-
-      const idx = state.zones.indexOf(current);
-      if (idx !== -1) state.zones[idx] = cleanName;
-      state.codeplugChannels.forEach(c => { if (c.zone === current) c.zone = cleanName; });
-      state.activeZone = cleanName;
-      updateHeaderStats();
-      renderZoneManager();
-      renderExportTable();
-    }
-
-    function deleteActiveZonePrompt() {
-      const current = state.activeZone;
-      if (state.zones.length <= 1) return alert('You must have at least one zone in your codeplug.');
-      const channelsInZone = state.codeplugChannels.filter(c => c.zone === current);
-      const confirmMsg = channelsInZone.length > 0 ? `Delete zone "${current}" and all ${channelsInZone.length} channels in it?` : `Delete empty zone "${current}"?`;
-      if (!confirm(confirmMsg)) return;
-
-      state.codeplugChannels = state.codeplugChannels.filter(c => c.zone !== current);
-      state.zones = state.zones.filter(z => z !== current);
-      state.activeZone = state.zones[0] || 'Default';
-      updateHeaderStats();
-      renderZoneManager();
-      renderExportTable();
-    }
-
-    function moveChannelToZone(channelIdx, targetZone) {
-      if (!state.codeplugChannels[channelIdx]) return;
-      state.codeplugChannels[channelIdx].zone = targetZone;
-      renderZoneManager();
-      renderExportTable();
-      updateHeaderStats();
-    }
-
-    function promptAddCustomChannelToActiveZone() {
-      const name = prompt(`Channel Name for zone "${state.activeZone}":`, "LOCAL SIMPLEX");
-      if (!name) return;
-      const freqStr = prompt(`RX Frequency (MHz):`, "146.5200");
-      if (!freqStr) return;
-      const rx = parseFloat(freqStr);
-      if (isNaN(rx)) return alert("Invalid frequency.");
-
-      const isUhf = rx > 300 && rx < 700;
-      const band = rx > 700 ? "700/800" : (isUhf ? "UHF" : "VHF");
-
-      pushChannelToCodeplug({
-        zone: state.activeZone,
-        name: name.slice(0, 16),
-        agencyType: "Custom Simplex",
-        desc: `Custom user channel in ${state.activeZone}`,
-        location: state.placeName,
-        mode: "Analog",
-        band,
-        service: "Amateur",
-        rx,
-        tx: rx,
-        bw: "25",
-        tone: "None",
-        cc: "",
-        ts: "",
-        tg: "",
-        tgId: "",
-        rxOnly: false
-      });
-
-      renderZoneManager();
-      renderExportTable();
-      updateHeaderStats();
-    }
-
-    function renderZoneManager() {
-      state.codeplugChannels.forEach(c => ensureZoneExists(c.zone));
-      if (!state.zones.includes(state.activeZone)) state.activeZone = state.zones[0] || 'Default';
-
-      document.getElementById('zoneCountBadge').textContent = state.zones.length;
-      document.getElementById('activeZoneTitle').textContent = state.activeZone;
-
-      const zoneContainer = document.getElementById('zoneListContainer');
-      zoneContainer.innerHTML = state.zones.map(z => {
-        const count = state.codeplugChannels.filter(c => c.zone === z).length;
-        const isSelected = z === state.activeZone;
-        return `
-          <div onclick="selectActiveZone('${z.replace(/'/g, "\\'")}')"
-               class="px-4 py-2.5 flex items-center justify-between cursor-pointer transition ${isSelected ? 'bg-cyan-950/40 border-l-4 border-cyan-400' : 'hover:bg-slate-800/40'}">
-            <div>
-              <div class="text-xs font-semibold ${isSelected ? 'text-cyan-300' : 'text-slate-200'}">${z}</div>
-              <div class="text-[10px] text-slate-400">${count} channel${count === 1 ? '' : 's'}</div>
-            </div>
-            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full ${isSelected ? 'bg-cyan-500/20 text-cyan-300' : 'bg-slate-800 text-slate-400'}">${count}</span>
-          </div>
-        `;
-      }).join('');
-
-      const activeChannels = state.codeplugChannels
-        .map((c, originalIdx) => ({ ...c, originalIdx }))
-        .filter(c => c.zone === state.activeZone);
-
-      document.getElementById('activeZoneSub').textContent = `${activeChannels.length} channel${activeChannels.length === 1 ? '' : 's'} assigned to "${state.activeZone}"`;
-      const tbody = document.getElementById('zoneChannelsTableBody');
-
-      if (activeChannels.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-12 text-center text-slate-500">Zone "${state.activeZone}" currently has no channels assigned.<br>Click <span class="text-emerald-400 font-semibold cursor-pointer" onclick="promptAddCustomChannelToActiveZone()">"+ Add Channel to This Zone"</span> above or add repeaters/zones from tabs 1 &amp; 2.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = activeChannels.map((c, i) => {
-        const zoneOptions = state.zones.map(z => `<option value="${z}" ${z === c.zone ? 'selected' : ''}>${z}</option>`).join('');
-        return `
-          <tr class="hover:bg-slate-800/40 align-top transition">
-            <td class="px-3 py-2.5 font-mono text-slate-500">${i + 1}</td>
-            <td class="px-3 py-2.5 max-w-[220px]">
-              <div class="font-mono text-white font-bold">${c.name}</div>
-              <div class="text-[10px] text-slate-400">${c.desc || c.location || ''}</div>
-            </td>
-            <td class="px-3 py-2.5"><span class="px-2 py-0.5 rounded text-[10px] ${modeBadgeClass(c.mode, c.service)}">${c.mode}</span></td>
-            <td class="px-3 py-2.5 font-mono text-slate-300 whitespace-nowrap">${c.rx.toFixed(4)} / ${c.tx.toFixed(4)}</td>
-            <td class="px-3 py-2.5 font-mono text-slate-400">${c.mode === 'DMR' ? `CC${c.cc || 1} TS${c.ts || 1} TG:${c.tgId || '-'}` : c.tone}</td>
-            <td class="px-3 py-2.5">
-              <select onchange="moveChannelToZone(${c.originalIdx}, this.value)" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-[11px] text-slate-200 focus:outline-none focus:border-cyan-500">
-                ${zoneOptions}
-              </select>
-            </td>
-            <td class="px-3 py-2.5 text-right">
-              <button onclick="removeChannel(${c.originalIdx})" class="text-rose-400 hover:text-rose-300 text-xs transition">Remove</button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    // =========================================================================
-    // RADIO SETTINGS (TAB 6) & SIGNALING TONES AUDIO SYNTHESIZER
-    // =========================================================================
     function syncRadioSettings() {
       state.radioSettings.dmrId = document.getElementById('cfgDmrId').value.trim() || '3225259';
       state.radioSettings.radioName = document.getElementById('cfgRadioName').value.trim() || 'KJ5QGI';
@@ -1582,7 +927,6 @@
       state.radioSettings.p25UnitId = document.getElementById('cfgP25UnitId').value;
       state.radioSettings.nxdnUnitId = document.getElementById('cfgNxdnUnitId').value;
 
-      // Update Export page readouts
       document.getElementById('statCallsign').textContent = state.radioSettings.radioName;
       document.getElementById('expCallReadout').textContent = state.radioSettings.radioName;
       document.getElementById('expDmrReadout').textContent = state.radioSettings.dmrId;
@@ -1612,238 +956,11 @@
       document.getElementById('cfgP25UnitId').value = state.radioSettings.p25UnitId;
       document.getElementById('cfgNxdnUnitId').value = state.radioSettings.nxdnUnitId;
 
-      document.getElementById('labelStartTone').textContent = state.radioSettings.startTone.name || "Not set";
-      document.getElementById('labelEndTone').textContent = state.radioSettings.endTone.name || "Not set";
-      document.getElementById('labelIdleTone').textContent = state.radioSettings.idleTone.name || "Not set";
+      document.getElementById('labelStartTone').textContent = state.radioSettings.startTone?.name || "Motorola MOTOTRBO R7 / APX Talk Permit";
+      document.getElementById('labelEndTone').textContent = state.radioSettings.endTone?.name || "Not set";
+      document.getElementById('labelIdleTone').textContent = state.radioSettings.idleTone?.name || "Not set";
       syncRadioSettings();
     }
-
-    // Tone Synth using Browser Web Audio API
-    function playAudioSequence(steps) {
-      if (!steps || steps.length === 0) return;
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        let time = ctx.currentTime;
-        steps.forEach(([freq, dur]) => {
-          if (freq > 0) {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, time);
-            gain.gain.setValueAtTime(0.12, time);
-            gain.gain.exponentialRampToValueAtTime(0.001, time + (dur / 1000));
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(time);
-            osc.stop(time + (dur / 1000));
-          }
-          time += (dur / 1000) + 0.02;
-        });
-      } catch (e) {}
-    }
-
-    const TONE_PRESETS = {
-      none: { name: "Not set: the radio keeps its own setting", steps: [] },
-      motorola_tpb: { name: "Motorola Talk Permit (Triple Chirp)", steps: [[900, 45], [1200, 45], [1500, 45]] },
-      nextel: { name: "Nextel Direct Connect Chirp", steps: [[1800, 60], [0, 20], [1800, 60]] },
-      standard_roger: { name: "Standard Roger Beep (1000Hz)", steps: [[1000, 90]] },
-      p25_grant: { name: "P25 Channel Grant Beep", steps: [[1020, 60], [1280, 60]] }
-    };
-
-    function previewTone(key) {
-      const tone = state.radioSettings[key + 'Tone'];
-      if (!tone || tone.steps.length === 0) {
-        // Play gentle default beep if not set
-        playAudioSequence([[800, 60]]);
-      } else {
-        playAudioSequence(tone.steps);
-      }
-    }
-
-    function openToneModal(key) {
-      state.activeModalToneKey = key;
-      const titles = { start: "Start Tone (Talk Permit)", end: "End Tone (Roger Beep)", idle: "Idle Tone (Channel Free)" };
-      document.getElementById('toneModalTitle').textContent = `Customize ${titles[key] || 'Tone'}`;
-      document.getElementById('modalToneDesc').value = state.radioSettings[key + 'Tone']?.name || '';
-      document.getElementById('modalTonePreset').value = 'none';
-      document.getElementById('toneModal').classList.remove('hidden');
-    }
-
-    function closeToneModal() {
-      document.getElementById('toneModal').classList.add('hidden');
-    }
-
-    function applyTonePreset(presetKey) {
-      const preset = TONE_PRESETS[presetKey];
-      if (!preset) return;
-      document.getElementById('modalToneDesc').value = preset.name;
-      playAudioSequence(preset.steps);
-    }
-
-    function playActiveModalTone() {
-      const pKey = document.getElementById('modalTonePreset').value;
-      const preset = TONE_PRESETS[pKey];
-      if (preset && preset.steps.length > 0) playAudioSequence(preset.steps);
-      else playAudioSequence([[1000, 80]]);
-    }
-
-    function saveToneModal() {
-      const key = state.activeModalToneKey;
-      if (!key) return;
-      const pKey = document.getElementById('modalTonePreset').value;
-      const desc = document.getElementById('modalToneDesc').value.trim() || 'Custom';
-      const preset = TONE_PRESETS[pKey] || { steps: [[1000, 80]] };
-
-      state.radioSettings[key + 'Tone'] = { name: desc, steps: preset.steps };
-      document.getElementById(`label${key.charAt(0).toUpperCase() + key.slice(1)}Tone`).textContent = desc;
-      syncRadioSettings();
-      closeToneModal();
-    }
-
-    // =========================================================================
-    // EXPORT TABLE & ENGINE (TAB 7)
-    // =========================================================================
-    function renderExportTable() {
-      syncRadioSettings();
-      const tbody = document.getElementById('exportChannelsTableBody');
-      if (state.codeplugChannels.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-10 text-center text-slate-500">Your codeplug is empty. Add repeaters from Tab 1 or statutory zones from Tab 2.</td></tr>`;
-        return;
-      }
-      tbody.innerHTML = state.codeplugChannels.map((c, i) => `
-        <tr class="hover:bg-slate-800/40 align-top transition">
-          <td class="px-3 py-2 font-mono text-slate-500">${i + 1}</td>
-          <td class="px-3 py-2 text-cyan-300 font-medium">${c.zone}</td>
-          <td class="px-3 py-2 max-w-[260px]"><div class="font-mono text-white font-bold">${c.name}</div><div class="text-[10px] text-slate-400">${c.desc || ''}</div></td>
-          <td class="px-3 py-2"><span class="px-2 py-0.5 rounded text-[10px] ${modeBadgeClass(c.mode, c.service)}">${c.mode}</span></td>
-          <td class="px-3 py-2 font-mono text-slate-300 whitespace-nowrap">${c.rx.toFixed(4)} / ${c.tx.toFixed(4)}</td>
-          <td class="px-3 py-2 font-mono text-slate-400">${c.mode === 'DMR' ? `CC${c.cc || 1} TS${c.ts || 1} TG:${c.tgId || '-'}` : c.tone}</td>
-          <td class="px-3 py-2 font-mono ${c.rxOnly ? 'text-rose-400' : 'text-emerald-400'}">${c.rxOnly ? 'RX ONLY' : 'TX/RX'}</td>
-          <td class="px-3 py-2 text-right"><button onclick="removeChannel(${i})" class="text-rose-400 hover:text-rose-300 text-xs">Remove</button></td>
-        </tr>
-      `).join('');
-    }
-
-    function exportCodeplug(target) {
-      if (state.codeplugChannels.length === 0) return alert('Add at least one channel to export.');
-      syncRadioSettings();
-      const dmrId = state.radioSettings.dmrId;
-      const radioName = state.radioSettings.radioName;
-
-      if (target === 'json') {
-        downloadFile('Codeplug_Master.json', JSON.stringify({
-          radioSettings: state.radioSettings,
-          zones: state.zones,
-          channels: state.codeplugChannels,
-          selectedTalkgroupIds: Array.from(state.selectedContacts)
-        }, null, 2));
-      } else if (target === 'anytone') {
-        // 1. AnyTone Channels.csv
-        const chCsv = 'No.,Channel Name,Receive Frequency,Transmit Frequency,Channel Type,Transmit Power,Band Width,CTCSS/DCS Decode,CTCSS/DCS Encode,Contact,Contact Call Type,Contact ID,Radio ID,Busy Lock/TX Permit,Squelch Mode,Color Code,Slot,RX Group List,TX Prohibit\n' +
-          state.codeplugChannels.map((c, i) => `${i + 1},"${c.name}",${c.rx.toFixed(5)},${c.tx.toFixed(5)},"${c.mode === 'DMR' ? 'D-Digital' : 'A-Analog'}","High","${c.bw}K","${c.tone}","${c.tone}","${c.tg || 'None'}","Group Call","${c.tgId || 9}","${dmrId}","Off","Carrier","${c.cc || 1}","${c.ts || 1}","None","${c.rxOnly ? 'On' : 'Off'}"`).join('\n');
-        downloadFile('AnyTone_Channels.csv', chCsv);
-
-        // 2. AnyTone TalkGroups.csv
-        const tgCsv = 'No.,Radio ID,Name,Call Type,Call Alert\n' + Array.from(state.selectedContacts).map((id, i) => {
-          const found = [...state.bmTalkgroups, ...state.p25Talkgroups].find(t => t.id === id);
-          return `${i + 1},${id},"${found ? found.name : 'TG ' + id}","Group Call","None"`;
-        }).join('\n');
-        downloadFile('AnyTone_TalkGroups.csv', tgCsv);
-
-        // 3. AnyTone Zone.csv (True Multi-Zone Members)
-        const zoneRows = state.zones.map((zName, i) => {
-          const members = state.codeplugChannels.filter(c => c.zone === zName).map(c => `"${c.name}"`).join('|');
-          const firstMember = state.codeplugChannels.find(c => c.zone === zName)?.name || '';
-          return `${i + 1},"${zName}",${members ? `"${members}"` : '""'},"${firstMember}","${firstMember}"`;
-        }).join('\n');
-        const zoneCsv = 'No.,Zone Name,Zone Channel Member,A Channel,B Channel\n' + zoneRows;
-        downloadFile('AnyTone_Zone.csv', zoneCsv);
-      } else if (target === 'opengd77') {
-        // 1. OpenGD77 Channels.csv
-        const chCsv = 'Channel Number,Channel Name,Channel Type,Rx Frequency,Tx Frequency,Bandwidth (kHz),Colour Code,Timeslot,Contact,TG List,DMR ID,Rx Only\n' +
-          state.codeplugChannels.map((c, i) => `${i + 1},"${c.name}","${c.mode === 'DMR' ? 'Digital' : 'Analogue'}",${c.rx.toFixed(5)},${c.tx.toFixed(5)},${c.bw},${c.cc || 1},${c.ts || 1},"${c.tg || 'None'}","None",${dmrId},${c.rxOnly ? 'Yes' : 'No'}`).join('\n');
-        downloadFile('Channels.csv', chCsv);
-
-        // 2. OpenGD77 Contacts.csv
-        const ctCsv = 'Contact Name,ID,ID Type,TS Override\n' + Array.from(state.selectedContacts).map(id => {
-          const found = [...state.bmTalkgroups, ...state.p25Talkgroups].find(t => t.id === id);
-          return `"${found ? found.name : 'TG ' + id}",${id},Group,Disabled`;
-        }).join('\n');
-        downloadFile('Contacts.csv', ctCsv);
-
-        // 3. OpenGD77 Zones.csv
-        const zCsv = 'Zone Name,Channel 1,Channel 2,Channel 3,Channel 4,Channel 5,Channel 6,Channel 7,Channel 8\n' +
-          state.zones.map(zName => {
-            const chs = state.codeplugChannels.filter(c => c.zone === zName).slice(0, 8).map(c => `"${c.name}"`);
-            while (chs.length < 8) chs.push('""');
-            return `"${zName}",${chs.join(',')}`;
-          }).join('\n');
-        downloadFile('Zones.csv', zCsv);
-      } else if (target === 'chirp') {
-        const analogOnly = state.codeplugChannels.filter(c => c.mode === 'Analog');
-        const csv = 'Location,Name,Frequency,Duplex,Offset,Tone,rToneFreq,cToneFreq,DtcsCode,DtcsPolarity,Mode,TStep,Skip,Comment\n' +
-          analogOnly.map((c, i) => {
-            const diff = c.tx - c.rx, duplex = c.rxOnly ? 'off' : diff > 0.001 ? '+' : diff < -0.001 ? '-' : '', offset = Math.abs(diff).toFixed(4);
-            const toneMatch = String(c.tone).match(/(\d{2,3}\.\d)/), tMode = toneMatch ? 'Tone' : '', tFreq = toneMatch ? toneMatch[1] : '88.5';
-            return `${i + 1},"${c.name}",${c.rx.toFixed(5)},${duplex},${offset},${tMode},${tFreq},${tFreq},023,NN,${parseFloat(c.bw) <= 12.5 ? 'NFM' : 'FM'},5.00,,"${c.zone} | ${c.agencyType || ''}"`;
-          }).join('\n');
-        downloadFile('CHIRP_Analog_Import.csv', csv);
-      } else if (target === 'trunked') {
-        const csv = 'Channel/TG Name,Zone,Agency Type,Location,Service,Band,Mode,Control/RX Freq,TX/Input Freq,TGID,Detail,TX Inhibit,Description\n' +
-          state.codeplugChannels.map(c => `"${c.name}","${c.zone}","${c.agencyType || ''}","${c.location || ''}","${c.service}","${c.band}","${c.mode}",${c.rx.toFixed(5)},${c.tx.toFixed(5)},"${c.tgId || ''}","${c.tone}",${c.rxOnly ? 'RX-ONLY' : 'TX'},"${(c.desc || '').replace(/"/g, "'")}"`).join('\n');
-        downloadFile('Trunked_PublicSafety_700_800.csv', csv);
-      }
-    }
-
-    function downloadFile(filename, content) {
-      const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob); a.download = filename;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    }
-
-    // =========================================================================
-    // NAVIGATION & INIT
-    // =========================================================================
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
-      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        const active = btn.dataset.tab === tabId;
-        btn.classList.toggle('border-cyan-400', active); btn.classList.toggle('text-cyan-400', active);
-        btn.classList.toggle('border-transparent', !active); btn.classList.toggle('text-slate-400', !active);
-      });
-      if (tabId === 'explorer' && map) setTimeout(() => map.invalidateSize(), 50);
-      if (tabId === 'zones') renderZoneManager();
-      if (tabId === 'radiosettings') loadSavedRadioSettings();
-      if (tabId === 'export') renderExportTable();
-    }
-
-    function updateHeaderStats() {
-      document.getElementById('statCallsign').textContent = state.radioSettings.radioName || 'KJ5QGI';
-      document.getElementById('statZones').textContent = state.zones.length;
-      document.getElementById('statChannels').textContent = state.codeplugChannels.length;
-      document.getElementById('statDmrIds').textContent = state.filteredDmrDatabase.length.toLocaleString();
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      const savedRelay = localStorage.getItem('cf_relay_url');
-      if (savedRelay) {
-        document.getElementById('relayUrl').value = savedRelay;
-        checkRelayStatus();
-      }
-      initMap();
-      generatePublicSafetyTemplates(state.lat, state.lon);
-      generateRegionalHamGrid(state.lat, state.lon);
-      fetchLiveHearHam();
-      renderStatutoryTables();
-      renderTalkgroups();
-      seedSampleDmrDatabase();
-      loadSavedRadioSettings();
-      renderZoneManager();
-      renderExportTable();
-      updateHeaderStats();
-    });
   </script>
 </body>
 </html>
